@@ -1,6 +1,6 @@
 from flask_restful import Resource
-from flask import request
 from mytypes import Game
+
 
 class GameMoves(Resource):
     def post(self, game_id):
