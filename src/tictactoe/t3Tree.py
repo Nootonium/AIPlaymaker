@@ -3,19 +3,6 @@ import random
 
 ROWS = COLS = 3
 
-# Definition for a Node.
-
-
-def is_board_valid(board):
-    moveset = set(["X", "O", " "])
-
-    if len(board) != 9:
-        return False
-    for move in board:
-        if move not in moveset:
-            return False
-    return True
-
 
 class T3Tree:
     class Node:
@@ -37,7 +24,6 @@ class T3Tree:
     def __init__(self, board=[[" " for _ in range(ROWS)] for _ in range(COLS)]) -> None:
         self.root = self.Node(board)
         self.table = {}
-        self.populate()
 
     def game_over(self, board):
         gameState = list(board)
@@ -113,7 +99,7 @@ class T3Tree:
             scores.append(self.minimax(child, not (maxPlayerTurn), maxPlayer))
         return max(scores) if maxPlayerTurn else min(scores)
 
-    def get_best_next_moves(self):
+    def get_next_best_moves(self):
         if self.game_over(self.root.val):
             raise Exception("The game is finished")
 
@@ -122,22 +108,10 @@ class T3Tree:
 
         self.populate  # find a way this is only called once
 
-        def minimax(node, maxPlayerTurn, maxPlayer):
-            state = self.game_over(node.val)
-            if state == " ":
-                return 0
-            elif state is not None:
-                return 1 if state == maxPlayer else -1
-
-            scores = []
-            for child in node.childs:
-                scores.append(minimax(child, not (maxPlayerTurn), maxPlayer))
-            return max(scores) if maxPlayerTurn else min(scores)
-
         scores = []
         curr_player = self.get_next_player(self.root.val)
         for i, child in enumerate(self.root.childs):
-            score = minimax(child, False, curr_player)
+            score = self.minimax(child, False, curr_player)
             scores.append((score, i))
         max_move = max(scores)[0]
         ans = []
@@ -148,7 +122,7 @@ class T3Tree:
 
         return ans
 
-    def get_best_next_move(self):
+    def get_next_best_move(self):
         next_moves = self.get_best_next_moves()
         if len(next_moves) > 1:
             return random.choice(next_moves)
