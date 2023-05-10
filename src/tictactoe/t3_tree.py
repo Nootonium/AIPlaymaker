@@ -1,31 +1,19 @@
 from collections import Counter
 import random
-from typing import Dict
 
-ROWS = COLS = 3
+from .t3_board import T3Board
 
 
 class T3Tree:
     class Node:
-        def __init__(self, val, childs=None):
-            self.val = val
+        def __init__(self, board, childs=None):
+            self.board = board
             self.childs = childs if childs is not None else []
 
-    WINNING = [
-        [0, 1, 2],  # Across top
-        [3, 4, 5],  # Across middle
-        [6, 7, 8],  # Across bottom
-        [0, 3, 6],  # Down left
-        [1, 4, 7],  # Down middle
-        [2, 5, 8],  # Down right
-        [0, 4, 8],  # Diagonal ltr
-        [2, 4, 6],  # Diagonal rtl
-    ]
-
-    def __init__(self, board="         ") -> None:
+    def __init__(self, board: T3Board) -> None:
         self.root = self.Node(board)
-        if self.is_valid_game_state():
-            self.table: Dict[str, list] = {}
+        if self.root.board.is_valid():
+            self.table = {}
             self.build_tree()
         else:
             raise ValueError("Invalid board")
@@ -140,9 +128,9 @@ class T3Tree:
         else:
             return next_moves
 
-    def is_valid_game_state(self):
+    @classmethod
+    def validate_state(cls, board):
         # Check if the number of X's and O's is possible
-        print(self.root.val)
         count = Counter(self.root.val)
         num_X = count.get("X", 0)
         num_O = count.get("O", 0)
@@ -151,7 +139,7 @@ class T3Tree:
 
         # Check if there is more than one winning state
         num_winning_states = sum(
-            self.game_over(self.root.val) is not None for _ in self.WINNING
+            cls.game_over(self.root.val) is not None for _ in self.WINNING
         )
         if num_winning_states > 1:
             return False
