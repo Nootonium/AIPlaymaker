@@ -2,7 +2,8 @@
 
 from flask import request
 from flask_restful import Resource
-from tictactoe import Service
+
+from ..tictactoe.service import Service
 
 
 class TicTacToe(Resource):
@@ -10,7 +11,7 @@ class TicTacToe(Resource):
         super().__init__()
         self.service = Service()
 
-    def post(self):
+    def post(self) -> dict:
         input_board = request.get_json()["board"]
 
         if request.path == "/tictactoe/move":

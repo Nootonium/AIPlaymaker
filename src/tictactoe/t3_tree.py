@@ -1,5 +1,5 @@
-from collections import Counter
 import random
+from typing import Any, Dict
 
 from .t3_board import T3Board
 
@@ -12,45 +12,23 @@ class T3Tree:
 
     def __init__(self, board: T3Board) -> None:
         self.root = self.Node(board)
-        if self.root.board.is_valid():
+        if self.root.board.is_valid_game_state():
             self.table = {}
             self.build_tree()
         else:
             raise ValueError("Invalid board")
 
-    def game_over(self, board):
-        gameState = list(board)
-        for wins in self.WINNING:
-            # Create a tuple
-            w = (gameState[wins[0]], gameState[wins[1]], gameState[wins[2]])
-            if w == ("X", "X", "X"):
-                return "X"
-            if w == ("O", "O", "O"):
-                return "O"
-        # Check for stalemate
-        if " " in gameState:
-            return None
-        return " "
-
-    def get_next_player(self, board):
-        count = Counter(board)
-        return "X" if count.get("X", 0) <= count.get("O", 0) else "O"
-
-    def get_next_possible_moves(self, board):
-        gameState = list(board)
-        return [i for i, p in enumerate(gameState) if p == " "]
-
-    def get_move_from_board(self, old_board, new_board):
+    def get_move_from_board(self, old_board, new_board) -> int | None:
         for i in range(9):
             if old_board[i] != new_board[i]:
                 return i
         return None
 
-    def build_tree(self):
+    def build_tree(self) -> None:
         def dfs(node):
-            current_player = self.get_next_player(node.val)
+            current_player = node.board.get_next_player()
 
-            for move_index in self.get_next_possible_moves(node.val):
+            for move_index in node.board.get_next_possible_moves():
                 new_board = (
                     node.val[:move_index] + current_player + node.val[move_index + 1 :]
                 )
@@ -61,19 +39,17 @@ class T3Tree:
                     child = T3Tree.Node(new_board)
                     self.table[new_board] = child
                     node.childs.append(child)
-                    if not self.game_over(new_board):
+                    if not child.board.game_over():
                         dfs(child)
-            return
 
-        if not self.game_over(self.root.val):
+        if not self.root.board.game_over():
             dfs(self.root)
-        return
 
     def get_stats_from_childs(self):
         res = []
 
         def dfs(node, curr_stat):
-            game_over = self.game_over(node.val)
+            game_over = node.board.game_over()
 
             if game_over:
                 curr_stat[game_over] = curr_stat.get(game_over, 0) + 1
@@ -87,26 +63,24 @@ class T3Tree:
             res.append(stat)
         return res
 
-    def minimax(self, node, maxPlayerTurn, maxPlayer):
+    def minimax(self, node, max_player_turn, max_player) -> int:
         # Returns the optimal score for the current player given a game state
-        state = self.game_over(node.val)
+        state = node.board.game_over()
         if state == " ":
             return 0
-        elif state is not None:
-            return 1 if state == maxPlayer else -1
+        if state is not None:
+            return 1 if state == max_player else -1
 
         scores = [
-            self.minimax(child, not maxPlayerTurn, maxPlayer) for child in node.childs
+            self.minimax(child, not max_player_turn, max_player)
+            for child in node.childs
         ]
-        return max(scores) if maxPlayerTurn else min(scores)
+        return max(scores) if max_player_turn else min(scores)
 
-    def get_best_next_moves(self):
+    def get_best_next_moves(self) -> list:
         # Returns a list of the best next board states
-        curr_player = self.get_next_player(self.root.val)
-        """if self.root.val == "         ":
-            return [
-                {"move": i, "board": self.get_move_from_board(self.root.val, curr_player)} for i in range(9)
-            ]"""
+        curr_player = self.root.board.get_next_player()
+        # TODO: return all moves if first move
 
         scores = [
             (self.minimax(child, False, curr_player), child.val)
@@ -114,54 +88,22 @@ class T3Tree:
         ]
         best_score = max(scores, key=lambda x: x[0])[0]
         best_moves = []
-        for score, board in scores:
+        for score, new_board in scores:
             if score == best_score:
-                move = self.get_move_from_board(self.root.val, board)
-                best_moves.append({"move": move, "board": board})
+                move = self.get_move_from_board(self.root.board, new_board)
+                best_moves.append({"move": move, "board": new_board})
 
         return best_moves
 
-    def get_best_next_move(self):
+    def get_best_next_move(self) -> Dict[Any, Any]:
         next_moves = self.get_best_next_moves()
         if len(next_moves) > 1:
             return random.choice(next_moves)
         else:
             return next_moves
 
-    @classmethod
-    def validate_state(cls, board):
-        # Check if the number of X's and O's is possible
-        count = Counter(self.root.val)
-        num_X = count.get("X", 0)
-        num_O = count.get("O", 0)
-        if abs(num_X - num_O) > 1:
-            return False
-
-        # Check if there is more than one winning state
-        num_winning_states = sum(
-            cls.game_over(self.root.val) is not None for _ in self.WINNING
-        )
-        if num_winning_states > 1:
-            return False
-
-        return True
-
-    def is_game_over(self):
-        # Check if the game is over
-        if self.game_over(self.root.val) is not None:
-            return True
-
-        # Check if there are any possible moves left
-        if " " not in self.root.val:
-            return True
-
-        return False
-
 
 if __name__ == "__main__":
-    tree = T3Tree()
-    # print(tree.get_next_best_boards())
-    # print(tree.get_next_best_move())
-    # print(tree.get_stats_from_childs())
-    # print(tree.is_game_over())
-    # print(tree.is_valid_game_state())
+    board = "         "
+    tree = T3Tree(T3Board(board))
+    print(tree.get_best_next_moves())
