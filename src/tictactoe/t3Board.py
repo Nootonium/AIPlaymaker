@@ -1,5 +1,4 @@
 from enum import Enum
-from exceptions import InvalidBoardFormatError
 
 
 class T3Board:
@@ -24,7 +23,7 @@ class T3Board:
 
         raise ValueError("Invalid input board format")
 
-    def convert_input_board_to_t3tree_format(self, input_board, board_format):
+    def convert_input_board_to_t3tree_format(input_board, board_format):
         match board_format:
             case T3Board.Formats.NESTED_LIST:
                 return "".join("".join(row) for row in input_board)
@@ -33,12 +32,11 @@ class T3Board:
             case T3Board.Formats.STRING:
                 return input_board
             case _:
-                raise ValueError("Invalid board format")
+                return None
 
-    def validate_board(self, input_board, board_format):
+    def validate_board(input_board, board_format):
         match board_format:
             case T3Board.Formats.NESTED_LIST:
-                # Check if input_board is a list of 3 lists, each with 3 strings of length 1
                 if not isinstance(input_board, list) or len(input_board) != 3:
                     return False
                 for row in input_board:
@@ -48,32 +46,41 @@ class T3Board:
                         if (
                             not isinstance(cell, str)
                             or len(cell) != 1
-                            or cell not in self.MOVES
+                            or cell not in T3Board.MOVES
                         ):
                             return False
                 return True
 
             case T3Board.Formats.FLAT_LIST:
-                # Check if input_board is a list of 9 strings of length 1
                 if not isinstance(input_board, list) or len(input_board) != 9:
                     return False
                 for cell in input_board:
                     if (
                         not isinstance(cell, str)
                         or len(cell) != 1
-                        or cell not in self.MOVES
+                        or cell not in T3Board.MOVES
                     ):
                         return False
                 return True
 
             case T3Board.Formats.STRING:
-                # Check if input_board is a string of length 9
                 if not isinstance(input_board, str) or len(input_board) != 9:
                     return False
                 for cell in input_board:
-                    if cell not in self.MOVES:
+                    if cell not in T3Board.MOVES:
                         return False
                 return True
 
             case _:
                 return False
+
+    def convert_t3tree_format_to_output_board(t3tree_board, board_format):
+        match board_format:
+            case T3Board.Formats.NESTED_LIST:
+                return [[t3tree_board[i * 3 + j] for j in range(3)] for i in range(3)]
+            case T3Board.Formats.FLAT_LIST:
+                return list(t3tree_board)
+            case T3Board.Formats.STRING:
+                return t3tree_board
+            case _:
+                raise ValueError("Invalid board format")
