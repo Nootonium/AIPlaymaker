@@ -2,7 +2,7 @@
 
 from flask import request
 from flask_restful import Resource
-from tictactoe import Service
+from src.tictactoe.service import Service
 
 
 class TicTacToe(Resource):
