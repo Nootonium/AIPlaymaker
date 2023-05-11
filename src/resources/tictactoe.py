@@ -2,15 +2,15 @@
 
 from flask import request
 from flask_restful import Resource
-from src.tictactoe.service import Service
+from ..tictactoe.t3_service import T3Service
 
 
 class TicTacToe(Resource):
     def __init__(self) -> None:
         super().__init__()
-        self.service = Service()
+        self.service = T3Service()
 
-    def post(self):
+    def post(self) -> list | dict:
         input_board = request.get_json()["board"]
 
         if request.path == "/tictactoe/move":

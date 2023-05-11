@@ -1,8 +1,9 @@
 from flask import Flask, jsonify
 from flask_restful import Api
 from resources.games_list import GamesList
-from resources.tictactoe import TicTacToe
-from exceptions import InvalidBoardFormatError
+
+from src.resources.tictactoe import TicTacToe
+from src.exceptions import InvalidBoardFormatError
 
 app = Flask(__name__)
 api = Api(app)
