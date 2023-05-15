@@ -42,14 +42,14 @@ class T3Tree:
                     child = Node(new_board)
                     self.table[new_board] = child
                     node.childs.append(child)
-                    if not child.board.game_over():
+                    if not child.board.get_winner():
                         dfs(child)
 
-        if not self.root.board.game_over():
+        if not self.root.board.get_winner():
             dfs(self.root)
 
     def minimax(self, node: Type["Node"], max_player_turn, max_player) -> int:
-        state = node.board.game_over()
+        state = node.board.get_winner()
         if state == " ":
             return 0
         if state is not None:
@@ -107,7 +107,7 @@ class T3Tree:
         res = []
 
         def dfs(node, curr_stat):
-            game_over = node.board.game_over()
+            game_over = node.board.get_winner()
 
             if game_over:
                 curr_stat[game_over] = curr_stat.get(game_over, 0) + 1
@@ -135,7 +135,7 @@ class T3Tree:
 if __name__ == "__main__":
     BOARD = T3Board("    X    ")
     # BOARD = T3Board(["X", " ", " ", " ", " ", " ", " ", "O", " "])
-    if BOARD.game_over() is None:
+    if BOARD.get_winner() is None:
         tree = T3Tree(BOARD)
         print(tree.get_best_next_moves())
         print(tree.get_best_next_move())

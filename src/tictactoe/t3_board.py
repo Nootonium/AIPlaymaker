@@ -28,8 +28,13 @@ class T3Board:
 
     @staticmethod
     def detect_format(input_board: str | list) -> Formats:
-        if isinstance(input_board, list) and all(
-            isinstance(row, list) and len(row) == 1 for row in input_board
+        if (
+            isinstance(input_board, list)
+            and len(input_board) == 3
+            and all(
+                isinstance(row, list) and len(row) == 1 and isinstance(row[0], str)
+                for row in input_board
+            )
         ):
             return T3Board.Formats.NESTED_LIST
 
@@ -62,7 +67,7 @@ class T3Board:
     def validate_state(cls: Type["T3Board"], state: str) -> bool:
         return all(move in cls.VALID_MOVES for move in state)
 
-    def game_over(self) -> Literal["X", "O", " "] | None:
+    def get_winner(self) -> Literal["X", "O", " "] | None:
         return self.determine_winner(self.state)
 
     @classmethod
