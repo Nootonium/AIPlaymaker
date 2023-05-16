@@ -105,46 +105,54 @@ class T3Board:
         return "X" if count.get("X", 0) <= count.get("O", 0) else "O"
 
     @staticmethod
-    def validate_board(input_board: str) -> bool:
+    def validate_board(input_board) -> bool:
         board_format = T3Board.detect_format(input_board)
+
         match board_format:
             case T3Board.Formats.NESTED_LIST:
-                if not isinstance(input_board, list) or len(input_board) != 3:
-                    return False
-                for row in input_board:
-                    if not isinstance(row, list) or len(row) != 3:
-                        return False
-                    for cell in row:
-                        if (
-                            not isinstance(cell, str)
-                            or len(cell) != 1
-                            or cell not in T3Board.VALID_MOVES
-                        ):
-                            return False
-                return True
-
+                return T3Board._validate_nested_list(input_board)
             case T3Board.Formats.FLAT_LIST:
-                if not isinstance(input_board, list) or len(input_board) != 9:
-                    return False
-                for cell in input_board:
-                    if (
-                        not isinstance(cell, str)
-                        or len(cell) != 1
-                        or cell not in T3Board.VALID_MOVES
-                    ):
-                        return False
-                return True
-
+                return T3Board._validate_flat_list(input_board)
             case T3Board.Formats.STRING:
-                if not isinstance(input_board, str) or len(input_board) != 9:
-                    return False
-                for cell in input_board:
-                    if cell not in T3Board.VALID_MOVES:
-                        return False
-                return True
-
+                return T3Board._validate_string(input_board)
             case _:
                 return False
+
+    @staticmethod
+    def _validate_nested_list(board: list) -> bool:
+        if not isinstance(board, list) or len(board) != 3:
+            return False
+        for row in board:
+            if not isinstance(row, list) or len(row) != 1:
+                return False
+            if not isinstance(row[0], str) or len(row[0]) != 3:
+                return False
+            if not T3Board._validate_cells(list(row[0])):
+                return False
+        return True
+
+    @staticmethod
+    def _validate_flat_list(board: list) -> bool:
+        if not isinstance(board, list) or len(board) != 9:
+            return False
+        return T3Board._validate_cells(board)
+
+    @staticmethod
+    def _validate_string(board: str) -> bool:
+        if not isinstance(board, str) or len(board) != 9:
+            return False
+        return T3Board._validate_cells(list(board))
+
+    @staticmethod
+    def _validate_cells(cells: list) -> bool:
+        for cell in cells:
+            if (
+                not isinstance(cell, str)
+                or len(cell) != 1
+                or cell not in T3Board.VALID_MOVES
+            ):
+                return False
+        return True
 
     def get_format(self) -> Formats:
         return self.input_format

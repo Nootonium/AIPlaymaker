@@ -10,6 +10,7 @@ from config import os, Development, Staging, Production
 load_dotenv()
 
 app = Flask(__name__)
+
 match os.getenv("FLASK_ENV", "development"):
     case "development":
         app.config.from_object(Development)

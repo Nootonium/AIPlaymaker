@@ -181,20 +181,98 @@ class TestT3Board(unittest.TestCase):
 
         self.assertEqual(when_result, "O")
 
-    def test_validate_board(self):
-        pass  # Replace pass with your test code
+    def test_given_nested_list_when_valid_then_validate_board(self):
+        given = [["XO "], ["XO "], ["   "]]
+        when = T3Board.validate_board(given)
+        self.assertTrue(when)
 
-    def test_get_format(self):
-        pass  # Replace pass with your test code
+    def test_given_nested_list_when_invalid_then_validate_board(self):
+        given = [["XOP"], ["XO "], ["   "]]
+        when = T3Board.validate_board(given)
+        self.assertFalse(when)
 
-    def test_convert_to_output_format(self):
-        pass  # Replace pass with your test code
+    def test_given_flat_list_when_valid_then_validate_board(self):
+        given = ["X", "O", " ", " ", "X", "O", "O", " ", "X"]
+        when = T3Board.validate_board(given)
+        self.assertTrue(when)
 
-    def test_convert_from_internal_format(self):
-        pass  # Replace pass with your test code
+    def test_given_flat_list_when_invalid_then_validate_board(self):
+        given = ["X", "O", "P", " ", "X", "O", "O", " ", "X"]
+        when = T3Board.validate_board(given)
+        self.assertFalse(when)
 
-    def test_is_empty(self):
-        pass  # Replace pass with your test code
+    def test_given_string_when_valid_then_validate_board(self):
+        given = "XO XO O X"
+        when = T3Board.validate_board(given)
+        self.assertTrue(when)
+
+    def test_given_string_when_invalid_then_validate_board(self):
+        given = "XO XP O X"
+        when = T3Board.validate_board(given)
+        self.assertFalse(when)
+
+    def test_given_nested_list_when_get_format_then_return_nested_list(self):
+        given = T3Board([["XO "], ["XO "], ["   "]])
+        when = given.get_format()
+        self.assertEqual(when, T3Board.Formats.NESTED_LIST)
+
+    def test_given_flat_list_when_get_format_then_return_flat_list(self):
+        given = T3Board(["X", "O", " ", " ", "X", "O", "O", " ", "X"])
+        when = given.get_format()
+        self.assertEqual(when, T3Board.Formats.FLAT_LIST)
+
+    def test_given_string_when_get_format_then_return_string(self):
+        given = T3Board("XO XO O X")
+        when = given.get_format()
+        self.assertEqual(when, T3Board.Formats.STRING)
+
+    def test_given_nested_list_when_converting_then_return_nested_list(self):
+        given_state = "XO XO    "
+        given_format = T3Board.Formats.NESTED_LIST
+        expected_result = [["X", "O", " "], ["X", "O", " "], [" ", " ", " "]]
+
+        when_result = T3Board.convert_from_internal_format(given_state, given_format)
+
+        self.assertEqual(when_result, expected_result)
+
+    def test_given_flat_list_when_converting_then_return_flat_list(self):
+        given_state = "XO XO    "
+        given_format = T3Board.Formats.FLAT_LIST
+        expected_result = list(given_state)
+
+        when_result = T3Board.convert_from_internal_format(given_state, given_format)
+
+        self.assertEqual(when_result, expected_result)
+
+    def test_given_string_when_converting_then_return_string(self):
+        given_state = "XO XO    "
+        given_format = T3Board.Formats.STRING
+        expected_result = given_state
+
+        when_result = T3Board.convert_from_internal_format(given_state, given_format)
+
+        self.assertEqual(when_result, expected_result)
+
+    def test_given_invalid_format_when_converting_then_raise_error(self):
+        given_state = "XO XO    "
+        given_format = "Invalid Format"
+
+        with self.assertRaises(ValueError):
+            T3Board.convert_from_internal_format(given_state, given_format)
+
+    def test_given_empty_board_when_checking_is_empty_then_return_true(self):
+        t3board = T3Board(" " * 9)
+
+        when_result = t3board.is_empty()
+
+        self.assertTrue(when_result)
+
+    def test_given_non_empty_board_when_checking_is_empty_then_return_false(self):
+        t3board = T3Board("XO XO    ")
+
+        when_result = t3board.is_empty()
+
+        self.assertFalse(when_result)
 
 
 if __name__ == "__main__":
