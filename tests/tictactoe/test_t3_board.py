@@ -132,7 +132,7 @@ class TestT3Board(unittest.TestCase):
 
         self.assertEqual(when_result, "O")
 
-    def test_given_not_finished_when_get_winner_then_return_space(self):
+    def test_given_game_ongoing_when_get_winner_then_return_space(self):
         given_state = VALID_STRING
         board = T3Board(given_state)
 

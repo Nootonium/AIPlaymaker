@@ -4,8 +4,10 @@ from src.tictactoe.t3_tree import T3Tree, Node
 
 
 class TestT3Tree(unittest.TestCase):
+    midle_X_start = "O   X    "  # Todo: refactor test constants
+
     def setUp(self):
-        self.board = T3Board("    X    ")
+        self.board = T3Board(self.midle_X_start)
         self.tree = T3Tree(self.board)
 
     def test_init(self):
