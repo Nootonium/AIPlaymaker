@@ -14,13 +14,39 @@ class TestT3Tree(unittest.TestCase):
         self.assertIsInstance(self.tree.root, Node)
         self.assertEqual(self.tree.root.board, self.board)
 
-    def test_get_move_from_board(self):
-        # Here you can test get_move_from_board method
-        pass
+    def test_given_two_diff_moves_when_find_difference_position_then_raises_value_error(
+        self,
+    ):
+        old_board = "         "
+        new_board = "XO       "
+
+        with self.assertRaises(ValueError):
+            T3Tree.find_difference_position(self, old_board, new_board)
+
+    def test_given_one_diff_move_when_find_difference_position_then_returns_index(self):
+        old_board = "         "
+        new_board = "X        "
+
+        index = T3Tree.find_difference_position(self, old_board, new_board)
+
+        self.assertEqual(index, 0)
+
+    def test_given_no_diff_moves_when_find_difference_position_then_returns_none(self):
+        old_board = "         "
+        new_board = "         "
+
+        index = T3Tree.find_difference_position(self, old_board, new_board)
+
+        self.assertIsNone(index)
 
     def test_build_tree(self):
-        # Here you can test build_tree method
-        pass
+        initial_board_state = "    X    "
+        board = T3Board(initial_board_state)
+        tree = T3Tree(board)
+
+        best_next_moves = tree.get_best_next_moves()
+
+        self.assertEqual(len(best_next_moves), 4)
 
     def test_minimax(self):
         # Here you can test minimax method

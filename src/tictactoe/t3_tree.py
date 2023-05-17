@@ -19,11 +19,17 @@ class T3Tree:
         else:
             raise ValueError("Invalid board")
 
-    def get_move_from_board(self, old_board: str, new_board: str) -> int | None:
-        for i in range(9):
-            if old_board[i] != new_board[i]:
-                return i
-        return None
+    def find_difference_position(self, old_board: str, new_board: str) -> int | None:
+        diff_positions = [i for i in range(9) if old_board[i] != new_board[i]]
+
+        if len(diff_positions) > 1:
+            raise ValueError(
+                "More than one position differs between old_board and new_board. Only one move can be made at a time."
+            )
+        elif diff_positions:
+            return diff_positions[0]
+        else:
+            return None
 
     def build_tree(self) -> None:
         def dfs(node):
@@ -77,7 +83,9 @@ class T3Tree:
         best_moves = []
         for score, node in scores:
             if score == best_score:
-                move = self.get_move_from_board(self.root.board.state, node.board.state)
+                move = self.find_difference_position(
+                    self.root.board.state, node.board.state
+                )
                 best_moves.append(
                     {
                         "move": move,
