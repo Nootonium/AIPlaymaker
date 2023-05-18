@@ -19,18 +19,6 @@ class T3Tree:
         else:
             raise ValueError("Invalid board")
 
-    def find_difference_position(self, old_board: str, new_board: str) -> int | None:
-        diff_positions = [i for i in range(9) if old_board[i] != new_board[i]]
-
-        if len(diff_positions) > 1:
-            raise ValueError(
-                "More than one position differs between old_board and new_board. Only one move can be made at a time."
-            )
-        elif diff_positions:
-            return diff_positions[0]
-        else:
-            return None
-
     def build_tree(self) -> None:
         def dfs(node):
             current_player = node.board.get_next_player()
@@ -79,33 +67,24 @@ class T3Tree:
 
     def get_best_moves(
         self, best_score: int, scores: List[Tuple[int, Type["Node"]]]
-    ) -> List[Dict[str, Union[int, None, str, List[List[str]], List[str]]]]:
+    ) -> List[Dict[str, Union[str, int, None]]]:
         best_moves = []
         for score, node in scores:
             if score == best_score:
-                move = self.find_difference_position(
-                    self.root.board.state, node.board.state
-                )
-                best_moves.append(
-                    {
-                        "move": move,
-                        "post_move_board": T3Board.convert_from_internal_format(
-                            node.board.state, self.root.board.input_format
-                        ),
-                    }
-                )
+                move = self.root.board.find_move_position(node.board.state)
+                best_moves.append({"move": move, "post_move_board": node.board.state})
         return best_moves
 
     def get_best_next_moves(
         self,
-    ) -> List[Dict[str, Union[int, None, str, List[List[str]], List[str]]]]:
+    ) -> List[Dict[str, Union[str, int, None]]]:
         scores = self.get_scores()
         best_score = self.get_best_score(scores)
         return self.get_best_moves(best_score, scores)
 
     def get_best_next_move(
         self,
-    ) -> Dict[str, Union[int, None, str, List[List[str]], List[str]]]:
+    ) -> Dict[str, Union[str, int, None]]:
         next_moves = self.get_best_next_moves()
         if len(next_moves) > 1:
             return random.choice(next_moves)
