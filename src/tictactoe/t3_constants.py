@@ -2,8 +2,9 @@ from enum import Enum
 
 
 class BoardFormats(Enum):
-    FLAT_LIST = 2
-    STRING = 3
+    FLAT_LIST = 1
+    STRING = 2
+    INVALID = 3
 
 
 VALID_MOVES = ["X", "O", " "]

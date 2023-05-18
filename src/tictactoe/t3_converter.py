@@ -1,3 +1,4 @@
+from typing import Tuple
 from .t3_constants import VALID_MOVES, BoardFormats
 
 
@@ -10,7 +11,7 @@ class T3Converter:
         if isinstance(input_board, str) and len(input_board) == 9:
             return BoardFormats.STRING
 
-        raise ValueError("Invalid input board format")
+        return BoardFormats.INVALID
 
     @staticmethod
     def convert_to_internal_format(
@@ -37,16 +38,16 @@ class T3Converter:
                 raise ValueError("Invalid board format")
 
     @staticmethod
-    def validate_board(input_board) -> bool:
+    def validate_board(input_board) -> Tuple[bool, BoardFormats]:
         board_format = T3Converter.detect_format(input_board)
 
         match board_format:
             case BoardFormats.FLAT_LIST:
-                return T3Converter._validate_flat_list(input_board)
+                return (T3Converter._validate_flat_list(input_board), board_format)
             case BoardFormats.STRING:
-                return T3Converter._validate_string(input_board)
+                return (T3Converter._validate_string(input_board), board_format)
             case _:
-                return False
+                return (False, board_format)
 
     @staticmethod
     def _validate_flat_list(board: list) -> bool:

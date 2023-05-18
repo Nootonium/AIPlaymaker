@@ -1,7 +1,7 @@
 import pytest
 from src.tictactoe.t3_converter import T3Converter
 from src.tictactoe.t3_constants import BoardFormats
-from .test_constants import VALID_BOARD
+from .test_constants import VALID_BOARD, INVALID_BOARD
 
 
 def test_given_flat_list_when_valid_then_detect_format():
@@ -22,187 +22,120 @@ def test_given_string_when_valid_then_detect_format():
 def test_given_none_when_detect_format_then_raise_error():
     input_board = None
 
-    with pytest.raises(ValueError):
-        T3Converter.detect_format(input_board)
+    assert T3Converter.detect_format(input_board) == BoardFormats.INVALID
 
 
 def test_given_not_string_or_list_when_detect_format_then_raise_error():
     input_board = 12345
 
+    assert T3Converter.detect_format(input_board) == BoardFormats.INVALID
+
+
+def test_given_flat_list_when_convert_to_internal_format_then_return_string():
+    given_flat_board = T3Converter.convert_from_internal_format(
+        VALID_BOARD, BoardFormats.FLAT_LIST
+    )
+
+    when_result = T3Converter.convert_to_internal_format(
+        given_flat_board, BoardFormats.FLAT_LIST
+    )
+
+    assert when_result == VALID_BOARD
+
+
+def test_given_string_when_convert_to_internal_format_then_return_same_string():
+    given_string_board = VALID_BOARD
+
+    when_result = T3Converter.convert_to_internal_format(
+        given_string_board, BoardFormats.STRING
+    )
+
+    assert when_result == VALID_BOARD
+
+
+def test_given_invalid_format_when_convert_to_internal_format_then_return_none():
     with pytest.raises(ValueError):
-        T3Converter.detect_format(input_board)
+        T3Converter.convert_to_internal_format(VALID_BOARD, "INVALID_FORMAT")
 
 
-"""
-def test_given_string_when_invalid_then_raise_error(self):
-    input_board = INVALID_STRING_1
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
-    input_board = INVALID_STRING_2
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
+def test_given_string_when_convert_from_internal_format_to_flat_list_then_return_list():
+    given_internal_board = VALID_BOARD
 
-def test_given_none_when_detect_format_then_raise_error(self):
-    input_board = None
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
-
-def test_given_not_string_or_list_when_detect_format_then_raise_error(self):
-    input_board = 12345
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
-
-def test_given_flat_list_when_convert_to_internal_format_then_return_string(self):
-    given_input_board = VALID_FLAT_LIST
-    given_format = T3Board.Formats.FLAT_LIST
-    expected_output = VALID_STRING
-
-    when_result = T3Board.convert_to_internal_format(
-        given_input_board, given_format
+    when_result = T3Converter.convert_from_internal_format(
+        given_internal_board, BoardFormats.FLAT_LIST
     )
 
-    self.assertEqual(when_result, expected_output)
+    assert when_result == list(VALID_BOARD)
 
-def test_given_flat_list_when_valid_then_detect_format(self):
-    input_board = VALID_FLAT_LIST
-    self.assertEqual(T3Board.detect_format(input_board), T3Board.Formats.FLAT_LIST)
 
-def test_given_flat_list_when_invalid_then_raise_error(self):
-    input_board = INVALID_FLAT_LIST_1
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
-    input_board = INVALID_FLAT_LIST_2
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
+def test_given_string_when_convert_from_internal_format_to_string_then_return_string():
+    given_internal_board = VALID_BOARD
 
-def test_given_string_when_valid_then_detect_format(self):
-    input_board = VALID_STRING
-    self.assertEqual(T3Board.detect_format(input_board), T3Board.Formats.STRING)
-
-def test_given_string_when_invalid_then_raise_error(self):
-    input_board = INVALID_STRING_1
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
-    input_board = INVALID_STRING_2
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
-
-def test_given_none_when_detect_format_then_raise_error(self):
-    input_board = None
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
-
-def test_given_not_string_or_list_when_detect_format_then_raise_error(self):
-    input_board = 12345
-    with self.assertRaises(ValueError):
-        T3Board.detect_format(input_board)
-
-def test_given_flat_list_when_convert_to_internal_format_then_return_string(self):
-    given_input_board = VALID_FLAT_LIST
-    given_format = T3Board.Formats.FLAT_LIST
-    expected_output = VALID_STRING
-
-    when_result = T3Board.convert_to_internal_format(
-        given_input_board, given_format
+    when_result = T3Converter.convert_from_internal_format(
+        given_internal_board, BoardFormats.STRING
     )
 
-    self.assertEqual(when_result, expected_output)
+    assert when_result == VALID_BOARD
 
-def test_given_string_when_convert_to_internal_format_then_return_same_string(self):
-    given_input_board = VALID_STRING
-    given_format = T3Board.Formats.STRING
-    expected_output = VALID_STRING
 
-    when_result = T3Board.convert_to_internal_format(
-        given_input_board, given_format
-    )
+def test_given_invalid_format_when_convert_from_internal_format_then_raise_error():
+    with pytest.raises(ValueError):
+        T3Converter.convert_from_internal_format(VALID_BOARD, "INVALID_FORMAT")
 
-    self.assertEqual(when_result, expected_output)
 
-def test_given_invalid_format_when_convert_to_internal_format_then_return_none(
-    self,
-):
-    given_input_board = VALID_STRING
-    given_format = "INVALID_FORMAT"
-    expected_output = None
+def test_given_flat_list_format_when_validating_board_then_returns_true():
+    # Given
+    board = list(VALID_BOARD)  # assuming VALID_MOVES is a list of 9 elements
 
-    when_result = T3Board.convert_to_internal_format(
-        given_input_board, given_format
-    )
+    # When
+    is_valid, board_format = T3Converter.validate_board(board)
 
-    self.assertEqual(when_result, expected_output)
+    # Then
+    assert is_valid is True
+    assert board_format == BoardFormats.FLAT_LIST
 
-def test_given_nested_list_when_invalid_then_validate_board(self):
-    given = [["XOP"], ["XO "], ["   "]]
-    when = T3Board.validate_board(given)
-    self.assertFalse(when)
 
-def test_given_flat_list_when_valid_then_validate_board(self):
-    given = ["X", "O", " ", " ", "X", "O", "O", " ", "X"]
-    when = T3Board.validate_board(given)
-    self.assertTrue(when)
+def test_given_string_format_when_validating_board_then_returns_true():
+    # Given
+    board = "".join(VALID_BOARD)  # assuming VALID_MOVES is a list of 9 elements
 
-def test_given_flat_list_when_invalid_then_validate_board(self):
-    given = ["X", "O", "P", " ", "X", "O", "O", " ", "X"]
-    when = T3Board.validate_board(given)
-    self.assertFalse(when)
+    # When
+    is_valid, board_format = T3Converter.validate_board(board)
 
-def test_given_string_when_valid_then_validate_board(self):
-    given = "XO XO O X"
-    when = T3Board.validate_board(given)
-    self.assertTrue(when)
+    # Then
+    assert is_valid is True
+    assert board_format == BoardFormats.STRING
 
-def test_given_string_when_invalid_then_validate_board(self):
-    given = "XO XP O X"
-    when = T3Board.validate_board(given)
-    self.assertFalse(when)
 
-def test_given_nested_list_when_get_format_then_return_nested_list(self):
-    given = T3Board([["XO "], ["XO "], ["   "]])
-    when = given.get_format()
-    self.assertEqual(when, T3Board.Formats.NESTED_LIST)
+def test_given_invalid_format_when_validating_board_then_returns_false():
+    # Given
+    board = {INVALID_BOARD}
 
-def test_given_flat_list_when_get_format_then_return_flat_list(self):
-    given = T3Board(["X", "O", " ", " ", "X", "O", "O", " ", "X"])
-    when = given.get_format()
-    self.assertEqual(when, T3Board.Formats.FLAT_LIST)
+    # When
+    is_valid, board_format = T3Converter.validate_board(board)
 
-def test_given_string_when_get_format_then_return_string(self):
-    given = T3Board("XO XO O X")
-    when = given.get_format()
-    self.assertEqual(when, T3Board.Formats.STRING)
+    # Then
+    assert is_valid is False
+    assert board_format == BoardFormats.INVALID
 
-def test_given_nested_list_when_converting_then_return_nested_list(self):
-    given_state = "XO XO    "
-    given_format = T3Board.Formats.NESTED_LIST
-    expected_result = [["X", "O", " "], ["X", "O", " "], [" ", " ", " "]]
 
-    when_result = T3Board.convert_from_internal_format(given_state, given_format)
+def test_given_valid_flat_list_when_validating_then_returns_true():
+    # Given
+    board = list(VALID_BOARD)
 
-    self.assertEqual(when_result, expected_result)
+    # When
+    result = T3Converter._validate_flat_list(board)
 
-def test_given_flat_list_when_converting_then_return_flat_list(self):
-    given_state = "XO XO    "
-    given_format = T3Board.Formats.FLAT_LIST
-    expected_result = list(given_state)
+    # Then
+    assert result is True
 
-    when_result = T3Board.convert_from_internal_format(given_state, given_format)
 
-    self.assertEqual(when_result, expected_result)
+def test_given_invalid_flat_list_when_validating_then_returns_false():
+    # Given
+    board = list(INVALID_BOARD)
 
-def test_given_string_when_converting_then_return_string(self):
-    given_state = "XO XO    "
-    given_format = T3Board.Formats.STRING
-    expected_result = given_state
+    # When
+    result = T3Converter._validate_flat_list(board)
 
-    when_result = T3Board.convert_from_internal_format(given_state, given_format)
-
-    self.assertEqual(when_result, expected_result)
-
-def test_given_invalid_format_when_converting_then_raise_error(self):
-    given_state = "XO XO    "
-    given_format = "Invalid Format"
-
-    with self.assertRaises(ValueError):
-        T3Board.convert_from_internal_format(given_state, given_format)
-        """
+    # Then
+    assert result is False

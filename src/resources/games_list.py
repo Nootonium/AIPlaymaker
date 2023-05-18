@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from mytypes import Game
+from ..mytypes import Game
 
 
 class GamesList(Resource):

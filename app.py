@@ -2,9 +2,9 @@ from flask import Flask, jsonify
 from flask_restful import Api
 from dotenv import load_dotenv
 
-from resources.games_list import GamesList
-from resources.tictactoe import TicTacToe
-from exceptions import InvalidBoardException
+from src.resources.games_list import GamesList
+from src.resources.tictactoe import TicTacToe
+from src.exceptions import InvalidBoardException
 from config import os, Development, Staging, Production
 
 load_dotenv()
