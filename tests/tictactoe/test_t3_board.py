@@ -16,12 +16,12 @@ class TestT3Board(unittest.TestCase):
         board = T3Board(VALID_BOARD)
 
         self.assertTrue(board.is_valid_game_state())
-        self.assertTrue(T3Board.validate_state(board.state))
 
-    def test_given_invalid_state_when_checking_validity_then_return_false(self):
+    def test_given_invalid_state_when_init_then_raise(self):
         board = INVALID_BOARD_STATE
 
-        self.assertFalse(T3Board.validate_state(board))
+        with self.assertRaises(ValueError):
+            T3Board(board)
 
     def test_given_x_wins_when_get_winner_then_return_x(self):
         board = T3Board(VALID_X_WINS)
@@ -98,25 +98,25 @@ class TestT3Board(unittest.TestCase):
     def test_given_more_than_one_diff_when_compare_board_states_then_raises_value_error(
         self,
     ):
-        old_board = EMPTY_BOARD
+        old_board = T3Board(EMPTY_BOARD)
         new_board = VALID_BOARD
 
         with self.assertRaises(ValueError):
-            T3Board.compare_board_states(old_board, new_board)
+            old_board.find_move_position(new_board)
 
     def test_given_one_diff_move_when_compare_board_states_then_returns_index(self):
-        old_board = VALID_BOARD
+        old_board = T3Board(VALID_BOARD)
         new_board = VALID_BOARD_M8
 
-        index = T3Board.compare_board_states(old_board, new_board)
+        index = old_board.find_move_position(new_board)
 
         self.assertEqual(index, 8)
 
     def test_given_no_diff_moves_when_find_difference_position_then_returns_none(self):
-        old_board = EMPTY_BOARD
+        old_board = T3Board(EMPTY_BOARD)
         new_board = EMPTY_BOARD
 
-        index = T3Board.compare_board_states(old_board, new_board)
+        index = old_board.find_move_position(new_board)
 
         self.assertIsNone(index)
 

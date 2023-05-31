@@ -1,7 +1,7 @@
 import random
 from typing import Dict, List, Tuple, Type, Union
 
-from src.tictactoe.t3_board import T3Board
+from .t3_board import T3Board
 
 
 class Node:

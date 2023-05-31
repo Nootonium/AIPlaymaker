@@ -1,71 +1,91 @@
 from collections import Counter
-from typing import Literal, Type
+from typing import Literal, Set, Tuple
 from .c4_constants import VALID_MOVES
 
 
-class Board:
-    def __init__(self, dimensions: tuple, state: str) -> None:
+class C4Board:
+    state: str
+    dimensions: Tuple[int, int]
+
+    def __init__(self, dimensions: Tuple[int, int], state: str) -> None:
         self.dimensions = dimensions
         self.state = state
         if not self.is_valid_game_state():
             raise ValueError("Invalid board")
 
-    def is_valid_game_state(self) -> bool:
-        return self.validate_state(self.state, self.dimensions)
+    def has_floating_piece(self) -> bool:
+        rows, columns = self.dimensions
+        grid = [list(self.state[i * columns : (i + 1) * columns]) for i in range(rows)]
+        for col in range(columns):
+            has_piece = False
+            for row in reversed(range(rows)):
+                if grid[row][col] != " ":
+                    has_piece = True
+                elif has_piece:
+                    return True
+        return False
 
-    @classmethod
-    def validate_state(cls: Type["Board"], state: str, dimension: tuple) -> bool:
-        rows, colums = dimension
+    def is_valid_game_state(self) -> bool:
+        rows, columns = self.dimensions
         return (
-            all(move in VALID_MOVES for move in state) and len(state) == rows * colums
+            len(self.state) == rows * columns
+            and all(move in VALID_MOVES for move in self.state)
+            and not self.has_floating_piece()
         )
 
     def get_next_possible_moves(self) -> list[int]:
-        return self.calculate_possible_moves(self.state)
+        possible_moves = []
+        rows, columns = self.dimensions
+        for col in range(columns):
+            for i in reversed(range(rows)):
+                if self.state[i * columns + col] == " ":
+                    possible_moves.append(col)
+                    break
+        return possible_moves
 
-    @classmethod
-    def calculate_possible_moves(cls: Type["Board"], state: str) -> list[int]:
-        game_state = list(state)
-        return [i for i, p in enumerate(game_state) if p == " "]
+    def with_move(self, column: int, player: Literal["1", "2"]) -> "C4Board":
+        # returns a new board with the move made
+        rows, columns = self.dimensions
+        new_state = self.state
+        for i in range(rows):
+            if new_state[i * columns + column] == " ":
+                new_state = (
+                    new_state[: i * columns + column]
+                    + player
+                    + new_state[i * columns + column + 1 :]
+                )
+                return C4Board(self.dimensions, new_state)
+
+        raise ValueError(f"Column {column} is full.")
 
     def get_next_player(self) -> Literal["1", "2"]:
-        return self.calculate_next_player(self.state)
-
-    @classmethod
-    def calculate_next_player(cls: Type["Board"], state: str) -> Literal["1", "2"]:
-        count = Counter(state)
+        count = Counter(self.state)
         return "1" if count.get("1", 0) <= count.get("2", 0) else "2"
 
     def is_empty(self) -> bool:
         rows, columns = self.dimensions
-        return self.state == " " * rows * columns
+        return self.state == (" " * rows * columns)
 
     def find_move_position(self, new_board: str) -> int | None:
-        return self.compare_board_states(self.state, new_board, self.dimensions)
-
-    @classmethod
-    def compare_board_states(
-        cls: Type["Board"], old_board: str, new_board: str, dimensions: tuple
-    ) -> int | None:
-        rows, columns = dimensions
+        rows, columns = self.dimensions
         diff_positions = [
-            i for i in range(rows * columns) if old_board[i] != new_board[i]
+            i for i in range(rows * columns) if self.state[i] != new_board[i]
         ]
-
         if len(diff_positions) > 1:
             raise ValueError(
                 "Invalid board state: more than one move was made in a single turn"
             )
-        elif diff_positions:
+        if diff_positions:
             return diff_positions.pop()
-        else:
-            return None
+        return None
 
     def get_winner(self) -> str | None:
         rows, columns = self.dimensions
         state = self.state
         game_state = [state[i : i + columns] for i in range(0, len(state), columns)]
 
+        # depth first search to count the number of consecutive pieces
+        # couldve used a for loop but this is more fun
         def dfs(position, player, direction, visited):
             row, col = position
             if (
@@ -83,7 +103,7 @@ class Board:
             for c in range(columns):
                 if game_state[r][c] != " ":
                     for direction in [(0, 1), (1, 0), (1, 1), (1, -1)]:
-                        visited = set()
+                        visited: Set = set()
                         if dfs((r, c), game_state[r][c], direction, visited) >= 4:
                             return game_state[r][c]
 
