@@ -46,6 +46,9 @@ class C4Board:
     def with_move(self, column: int, player: Literal["1", "2"]) -> "C4Board":
         # returns a new board with the move made
         rows, columns = self.dimensions
+        if not (0 <= column < columns):
+            raise ValueError(f"Column {column} is out of range")
+
         new_state = self.state
         for i in range(rows):
             if new_state[i * columns + column] == " ":
@@ -76,7 +79,7 @@ class C4Board:
                 "Invalid board state: more than one move was made in a single turn"
             )
         if diff_positions:
-            return diff_positions.pop()
+            return diff_positions.pop() % columns
         return None
 
     def get_winner(self) -> str | None:
