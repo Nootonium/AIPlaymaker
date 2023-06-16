@@ -14,7 +14,7 @@ class Development(Config):
 
 
 class Staging(Config):
-    DEBUG = False  # Set this and other configuration values as needed for staging.
+    DEBUG = False
     TESTING = True
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = False

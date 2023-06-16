@@ -8,7 +8,7 @@ class C4Node:
     def __init__(self, input_board: C4Board, parent=None):
         self.board = input_board
         self.parent = parent
-        self.children = []
+        self.children: list = []
         self.wins = 0
         self.visits = 0
 
