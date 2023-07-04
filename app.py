@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 from src.resources.games_list import GamesList
 from src.resources.tictactoe import TicTacToe
+from src.resources.connect_four import ConnectFour
 from src.exceptions import InvalidBoardException
 from config import os, Development, Staging, Production
 
@@ -24,12 +25,13 @@ match os.getenv("FLASK_ENV", "development"):
 api = Api(app)
 
 api.add_resource(GamesList, "/games")
-api.add_resource(TicTacToe, "/tictactoe/move", "/tictactoe/moves")
+api.add_resource(TicTacToe, "/tictactoe/<string:action>")
+api.add_resource(ConnectFour, "/connectfour/<string:action>")
 
 
 @app.errorhandler(InvalidBoardException)
 def handle_invalid_usage(error):
-    response = jsonify({"message": str(error)})
+    response = jsonify({"error": str(error)})
     response.status_code = 400
     return response
 
