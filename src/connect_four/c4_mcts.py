@@ -81,7 +81,7 @@ class C4MCTS:
             self.expansion(selected_node)
             result = self.simulation(selected_node)
             self.backpropagation(selected_node, result)
-        return self.root.best_child().board
+        return self.root.best_child().board.state
 
 
 if __name__ == "__main__":

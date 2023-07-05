@@ -9,8 +9,8 @@ class ConnectFour(Resource):
         self.service = C4Service()
 
     def post(self, action: str) -> Response:
-        input_board = request.get_json()["board"]
-        dimension = request.get_json()["dimension"]
+        input_board = request.get_json().get("board")
+        dimension = request.get_json().get("dimension", (6, 7))
 
         if input_board is None:
             return make_response({"error": "Board is required"}, 400)
