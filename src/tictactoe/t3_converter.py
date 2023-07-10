@@ -1,6 +1,8 @@
 from typing import Tuple
 from .t3_constants import VALID_MOVES, BoardFormats
 
+# import torch
+
 
 class T3Converter:
     @staticmethod
@@ -67,3 +69,30 @@ class T3Converter:
             if not isinstance(cell, str) or len(cell) != 1 or cell not in VALID_MOVES:
                 return False
         return True
+
+    """
+    @staticmethod
+    def convert_to_tensor(board_string: str) -> torch.Tensor:
+        assert len(board_string) == 9, "Board string must be of length 9"
+
+        # Create a tensor of zeros with the appropriate shape
+        board_tensor = torch.zeros(1, 3, 3, 3)
+
+        # Iterate over the characters in the board string
+        for i, cell in enumerate(board_string):
+            # Calculate the corresponding row and column in the 3x3 grid
+            row = i // 3
+            col = i % 3
+
+            # Set the appropriate channel to 1 based on the cell contents
+            if cell == " ":
+                board_tensor[0, 0, row, col] = 1
+            elif cell == "X":
+                board_tensor[0, 1, row, col] = 1
+            elif cell == "O":
+                board_tensor[0, 2, row, col] = 1
+            else:
+                raise ValueError(f"Invalid character '{cell}' in board string")
+
+        return board_tensor
+    """
