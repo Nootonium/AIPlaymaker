@@ -8,9 +8,8 @@ class DataGenerator:
         self.full_tree = T3Tree(T3Board(" " * 9))
 
     def generate_data(self):
-        empty_board = T3Board(" " * 9)
-        full_tree = T3Tree(empty_board)
-        self._dfs(full_tree.root)
+        for child in self.full_tree.root.childs:
+            self._dfs(child)
 
     def _dfs(self, node: Node):
         game_state = node.board.get_winner()
@@ -20,17 +19,14 @@ class DataGenerator:
         for child in node.childs:
             self._dfs(child)
 
-        current_tree = T3Tree.from_root(self.full_tree.get_tree_from_board(node.board))
+        new_root = self.full_tree.get_tree_from_board(node.board)
+
+        current_tree = T3Tree.from_root(new_root)
         best_next_moves = current_tree.get_best_next_moves()
         next_moves = []
         for play in best_next_moves:
             next_moves.append(play.get("move"))
-        if next_moves:
-            print(node.board.state, next_moves)
-            input("Press Enter to continue...")
-            self.training_data.append((node.board.state, next_moves))
-        else:
-            print("No moves")
+        self.training_data.append((node.board.state, next_moves))
 
     def get_training_data(self):
         return self.training_data
@@ -39,3 +35,5 @@ class DataGenerator:
 if __name__ == "__main__":
     generator = DataGenerator()
     generator.generate_data()
+    print(generator.get_training_data()[0])
+    print(len(generator.get_training_data()))

@@ -46,3 +46,13 @@ class T3Board:
         if diff_positions:
             return diff_positions[0]
         return None
+
+    def make_move(self, move: int) -> None:
+        if move not in self.get_next_possible_moves():
+            print(self.state)
+            print(move)
+            move = self.get_next_possible_moves()[0]  # TODO: temp fix for ml model
+        next_player = self.get_next_player()
+        new_board = list(self.state)
+        new_board[move] = next_player
+        self.state = "".join(new_board)
