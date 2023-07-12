@@ -34,5 +34,5 @@ def play_games(inmodel, num_games=100):
         if res == "X":
             # print("state: ", state)
             pass
-
     print(f"X wins: {scores[0]}, O wins: {scores[1]}, Draws: {scores[2]}")
+    return scores

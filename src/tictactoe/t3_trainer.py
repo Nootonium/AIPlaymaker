@@ -10,6 +10,25 @@ from .t3_net import TicTacToeNet
 from .t3_self_play import play_games
 
 
+def calculate_accuracy(logits, targets):
+    # Convert logits to class probabilities
+    probabilities = torch.sigmoid(logits)
+
+    # Find the class with the highest probability
+    predicted_classes = torch.argmax(probabilities, dim=1)
+
+    # Find the true class
+    true_classes = torch.argmax(targets, dim=1)
+
+    # Check where predicted and true classes match
+    correct_predictions = predicted_classes == true_classes
+
+    # Calculate accuracy
+    accuracy = correct_predictions.sum().item() / len(correct_predictions)
+
+    return accuracy
+
+
 def data_setup():
     generator = DataGenerator()
     generator.generate_data()
@@ -34,57 +53,41 @@ def data_setup():
     # Create a Dataset from your input data and labels
     dataset = TensorDataset(data_torch, labels_torch)
 
-    # Split your data into training and validation sets
-    total_samples = len(dataset)
-    train_samples = int(total_samples * 0.99)
-    test_samples = total_samples - train_samples
-    train_dataset, test_dataset = torch.utils.data.random_split(
-        dataset, [train_samples, test_samples]
-    )
-
     # Create DataLoaders for your training and validation datasets
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+    train_loader = DataLoader(dataset, batch_size=16, shuffle=True)
+    test_loader = DataLoader(dataset, batch_size=32, shuffle=False)
     return train_loader, test_loader
 
 
 def model_setup(hid_size=227, lr=0.01):
     # Choose a loss function and optimizer
     model = TicTacToeNet(hid_size)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr)
     return model, criterion, optimizer
 
 
 def train(epochs, model, criterion, optimizer, train_loader, test_loader):
-    for epoch in tqdm(range(epochs)):
+    for epoch in range(epochs):
         total_loss = 0
+        total_accuracy = 0
         # start_time = time.time()
         for x, y in train_loader:
             optimizer.zero_grad()
 
-            outputs = model(x)
-
-            loss = criterion(outputs, y)
+            logits_outputs = model(x)
+            total_accuracy += calculate_accuracy(logits_outputs, y)
+            loss = criterion(logits_outputs, y)
 
             loss.backward()
 
             # Update parameters
             optimizer.step()
 
-            """show = True
-            if epoch % 10 == 0 and show and epoch != 0:
-                print(outputs[0], y[0])
-                print(loss.item())
-                predicted_move = torch.argmax(outputs[0]).item()
-                print("Predicted move: ", predicted_move)
-                ins = input("Press Enter to continue...")
-                print(ins)
-                if ins == "q":
-                    show = False"""
             total_loss += loss.item()
         # end_time = time.time()
-        # print(f"Epoch: {epoch+1}, Loss: {total_loss / len(train_loader)}")
+        print(f"Epoch: {epoch+1}, Loss: {total_loss / len(train_loader)}")
+        print(f"Accuracy: {total_accuracy / len(train_loader)}")
         # print(f"Time taken for epoch {epoch+1}: {end_time - start_time}")
 
     model.eval()
@@ -103,10 +106,24 @@ def train(epochs, model, criterion, optimizer, train_loader, test_loader):
 
 if __name__ == "__main__":
     train_loader, test_loader = data_setup()
-    lrArray = [0.001]
-    for epoch in range(13):
-        print("Epoch: ", epoch)
-        model, criterion, optimizer = model_setup(127, 0.001)
-        model = train(1, model, criterion, optimizer, train_loader, test_loader)
-        play_games(model, 100)
-        play_games(model, 100)
+    n = 216
+    lr = 0.0003
+    model, criterion, optimizer = model_setup(n, lr)
+    model = train(23, model, criterion, optimizer, train_loader, test_loader)
+    scores = play_games(model, 100)
+
+    """for lr in lrArray:
+        for n in range(81, 243, 27):
+            for epoch in range(13):
+                print("Epoch: ", epoch)
+                print("Learning rate: ", lr)
+                print("Hidden layer size: ", n)
+                model, criterion, optimizer = model_setup(n, lr)
+                model = train(1, model, criterion, optimizer, train_loader, test_loader)
+                scores = play_games(model, 100)
+                if scores[0] < best_score:
+                    best_score = scores[0]
+                    best_params = [epoch, int(lr * 100), n]"""
+
+    # print("Best score: ", best_score)
+    # print("Best params: ", best_params)

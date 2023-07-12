@@ -11,7 +11,10 @@ class TicTacToeNet(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(hidden_size, 9),
+            nn.Linear(hidden_size, 27),
+            nn.ReLU(),
+            nn.Linear(27, 9),
+            nn.Sigmoid(),
         )
 
     def forward(self, x):
