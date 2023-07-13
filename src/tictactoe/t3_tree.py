@@ -11,13 +11,20 @@ class Node:
 
 
 class T3Tree:
-    def __init__(self, input_board: T3Board) -> None:
+    def __init__(self, input_board: T3Board, build_tree: bool = True) -> None:
         self.root = Node(input_board)
-        if self.root.board.is_valid_game_state():
-            self.table: Dict[str, Type["Node"]] = {}
-            self.build_tree()
-        else:
-            raise ValueError("Invalid board")
+        self.table: Dict[str, Type["Node"]] = {}
+        if build_tree:
+            if self.root.board.is_valid_game_state():
+                self.build_tree()
+            else:
+                raise ValueError("Invalid board")
+
+    @classmethod
+    def from_root(cls, root_node: Node) -> "T3Tree":
+        new_tree = cls(root_node.board, build_tree=False)
+        new_tree.root.childs = root_node.childs
+        return new_tree
 
     def build_tree(self) -> None:
         def dfs(node):
@@ -30,17 +37,20 @@ class T3Tree:
                     + node.board.state[move_index + 1 :]
                 )
                 new_board = T3Board(new_board)
-                if new_board in self.table:
-                    node.childs.append(self.table[new_board])
+                if new_board.state in self.table:
+                    node.childs.append(self.table[new_board.state])
                 else:
                     child = Node(new_board)
-                    self.table[new_board] = child
+                    self.table[new_board.state] = child
                     node.childs.append(child)
                     if not child.board.get_winner():
                         dfs(child)
 
         if not self.root.board.get_winner():
             dfs(self.root)
+
+    def get_tree_from_board(self, board) -> Type["Node"] | None:
+        return self.table.get(board.state)
 
     def minimax(self, node: Type["Node"], max_player_turn, max_player) -> int:
         state = node.board.get_winner()
@@ -53,9 +63,17 @@ class T3Tree:
             self.minimax(child, not max_player_turn, max_player)
             for child in node.childs
         ]
+
         return max(scores) if max_player_turn else min(scores)
 
     def get_scores(self) -> List[Tuple[int, Type["Node"]]]:
+        """print("get_scores")
+        print(self.root.board.state)
+        print(self.root.board.get_next_player())
+        print(self.root.board.get_next_possible_moves())
+        print(self.root.board.get_winner())
+        print(self.root.childs)"""
+
         curr_player = self.root.board.get_next_player()
         return [
             (self.minimax(child, False, curr_player), child)

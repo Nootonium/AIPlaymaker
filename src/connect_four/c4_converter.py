@@ -1,15 +1,14 @@
 from typing import Tuple
-from .t3_constants import VALID_MOVES, BoardFormats
-import numpy as np
+from .c4_constants import VALID_MOVES, BoardFormats
 
 
-class T3Converter:
+class C4Converter:
     @staticmethod
     def detect_format(input_board: str | list) -> BoardFormats:
-        if isinstance(input_board, list) and len(input_board) == 9:
+        if isinstance(input_board, list):
             return BoardFormats.FLAT_LIST
 
-        if isinstance(input_board, str) and len(input_board) == 9:
+        if isinstance(input_board, str):
             return BoardFormats.STRING
 
         return BoardFormats.INVALID
@@ -39,28 +38,36 @@ class T3Converter:
                 raise ValueError("Invalid board format")
 
     @staticmethod
-    def validate_board(input_board) -> Tuple[bool, BoardFormats]:
-        board_format = T3Converter.detect_format(input_board)
+    def validate_board(input_board, dimension) -> Tuple[bool, BoardFormats]:
+        board_format = C4Converter.detect_format(input_board)
+        rows, columns = dimension
+        expected_length = rows * columns
 
         match board_format:
             case BoardFormats.FLAT_LIST:
-                return (T3Converter._validate_flat_list(input_board), board_format)
+                return (
+                    C4Converter._validate_flat_list(input_board, expected_length),
+                    board_format,
+                )
             case BoardFormats.STRING:
-                return (T3Converter._validate_string(input_board), board_format)
+                return (
+                    C4Converter._validate_string(input_board, expected_length),
+                    board_format,
+                )
             case _:
                 return (False, board_format)
 
     @staticmethod
-    def _validate_flat_list(board: list) -> bool:
-        if not isinstance(board, list) or len(board) != 9:
+    def _validate_flat_list(board: list, expected_length: int) -> bool:
+        if not isinstance(board, list) or len(board) != expected_length:
             return False
-        return T3Converter._validate_cells(board)
+        return C4Converter._validate_cells(board)
 
     @staticmethod
-    def _validate_string(board: str) -> bool:
-        if not isinstance(board, str) or len(board) != 9:
+    def _validate_string(board: str, expected_length: int) -> bool:
+        if not isinstance(board, str) or len(board) != expected_length:
             return False
-        return T3Converter._validate_cells(list(board))
+        return C4Converter._validate_cells(list(board))
 
     @staticmethod
     def _validate_cells(cells: list) -> bool:
@@ -68,15 +75,3 @@ class T3Converter:
             if not isinstance(cell, str) or len(cell) != 1 or cell not in VALID_MOVES:
                 return False
         return True
-
-
-def encode_board(board):
-    mapping = {"X": [1, 0, 0], "O": [0, 1, 0], " ": [0, 0, 1]}
-    return np.array([mapping[char] for char in board])
-
-
-def encode_moves(moves):
-    encoded_moves = np.zeros(9)
-    for move in moves:
-        encoded_moves[move] = 1
-    return encoded_moves
