@@ -67,13 +67,6 @@ class T3Tree:
         return max(scores) if max_player_turn else min(scores)
 
     def get_scores(self) -> List[Tuple[int, Type["Node"]]]:
-        """print("get_scores")
-        print(self.root.board.state)
-        print(self.root.board.get_next_player())
-        print(self.root.board.get_next_possible_moves())
-        print(self.root.board.get_winner())
-        print(self.root.childs)"""
-
         curr_player = self.root.board.get_next_player()
         return [
             (self.minimax(child, False, curr_player), child)
@@ -85,28 +78,33 @@ class T3Tree:
 
     def get_best_moves(
         self, best_score: int, scores: List[Tuple[int, Type["Node"]]]
-    ) -> List[Dict[str, Union[str, int, None]]]:
+    ) -> List[Tuple[int, str]]:
         best_moves = []
         for score, node in scores:
             if score == best_score:
                 move = self.root.board.find_move_position(node.board.state)
-                best_moves.append({"move": move, "post_move_board": node.board.state})
+                if move is not None:
+                    best_moves.append(
+                        (
+                            move,
+                            node.board.state,
+                        )
+                    )
         return best_moves
 
     def get_best_next_moves(
         self,
-    ) -> List[Dict[str, Union[str, int, None]]]:
+    ) -> List[Tuple[int, str]]:
         scores = self.get_scores()
         best_score = self.get_best_score(scores)
         return self.get_best_moves(best_score, scores)
 
     def get_best_next_move(
         self,
-    ) -> Dict[str, Union[str, int, None]]:
+    ) -> Tuple[int, str] | None:
         next_moves = self.get_best_next_moves()
-        if len(next_moves) > 1:
-            return random.choice(next_moves)
-        return next_moves[0] if next_moves else {}
+
+        return random.choice(next_moves)
 
     def get_stats_from_childs(self):
         res = []
@@ -139,7 +137,6 @@ class T3Tree:
 
 if __name__ == "__main__":
     BOARD = T3Board("    X    ")
-    # BOARD = T3Board(["X", " ", " ", " ", " ", " ", " ", "O", " "])
     if BOARD.get_winner() is None:
         tree = T3Tree(BOARD)
         print(tree.get_best_next_moves())

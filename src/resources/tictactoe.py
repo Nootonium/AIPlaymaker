@@ -10,12 +10,15 @@ class TicTacToe(Resource):
 
     def post(self, action: str) -> Response:
         input_board = request.get_json()["board"]
+        strategy = request.args.get("strategy")
         if input_board is None:
             return make_response({"error": "Board is required"}, 400)
 
         if action == "move":
-            return make_response(self.service.get_next_move(input_board), 200)
+            return make_response(self.service.get_next_move(input_board, strategy), 200)
         elif action == "moves":
-            return make_response(self.service.get_next_moves(input_board), 200)
+            return make_response(
+                self.service.get_next_moves(input_board, strategy), 200
+            )
         else:
             return make_response({"error": "Invalid action"}, 400)

@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from .t3_data_generator import DataGenerator
 from .t3_converter import encode_board, encode_moves
-from .t3_net import TicTacToeNet
+from .t3_net import T3Net
 from .t3_self_play import play_games
 
 
@@ -61,7 +61,7 @@ def data_setup():
 
 def model_setup(hid_size=227, lr=0.01):
     # Choose a loss function and optimizer
-    model = TicTacToeNet(hid_size)
+    model = T3Net(hid_size)
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr)
     return model, criterion, optimizer
@@ -109,21 +109,14 @@ if __name__ == "__main__":
     n = 216
     lr = 0.0003
     model, criterion, optimizer = model_setup(n, lr)
-    model = train(23, model, criterion, optimizer, train_loader, test_loader)
-    scores = play_games(model, 100)
-
-    """for lr in lrArray:
-        for n in range(81, 243, 27):
-            for epoch in range(13):
-                print("Epoch: ", epoch)
-                print("Learning rate: ", lr)
-                print("Hidden layer size: ", n)
-                model, criterion, optimizer = model_setup(n, lr)
-                model = train(1, model, criterion, optimizer, train_loader, test_loader)
-                scores = play_games(model, 100)
-                if scores[0] < best_score:
-                    best_score = scores[0]
-                    best_params = [epoch, int(lr * 100), n]"""
+    for epoch in range(23):
+        print(f"Epoch: {epoch+1}")
+        model = train(1, model, criterion, optimizer, train_loader, test_loader)
+        score = play_games(model, 100)
+        """if score[0] == 0:
+            torch.save(
+                model.state_dict(), f"tictactoe/models/model_{n}_{lr}_{epoch+1}.pth"
+            )"""
 
     # print("Best score: ", best_score)
     # print("Best params: ", best_params)

@@ -24,8 +24,8 @@ class DataGenerator:
         current_tree = T3Tree.from_root(new_root)
         best_next_moves = current_tree.get_best_next_moves()
         next_moves = []
-        for play in best_next_moves:
-            next_moves.append(play.get("move"))
+        for move, _ in best_next_moves:
+            next_moves.append(move)
         self.training_data.append((node.board.state, next_moves))
 
     def get_training_data(self):

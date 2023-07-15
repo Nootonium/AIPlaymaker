@@ -9,6 +9,12 @@ class T3Board:
         if not self.is_valid_game_state():
             raise ValueError("Invalid board")
 
+    def __str__(self):
+        pretty_board = ""
+        for i in range(0, 9, 3):
+            pretty_board += "| " + " | ".join(self.state[i : i + 3]) + " |\n"
+        return pretty_board
+
     def is_valid_game_state(self) -> bool:
         return all(move in VALID_MOVES for move in self.state) and len(self.state) == 9
 
@@ -47,12 +53,12 @@ class T3Board:
             return diff_positions[0]
         return None
 
-    def make_move(self, move: int) -> None:
+    def make_move(self, move: int) -> "T3Board":
         if move not in self.get_next_possible_moves():
             print(self.state)
             print(move)
             move = self.get_next_possible_moves()[0]  # TODO: temp fix for ml model
         next_player = self.get_next_player()
-        new_board = list(self.state)
-        new_board[move] = next_player
-        self.state = "".join(new_board)
+        new_board_state = list(self.state)
+        new_board_state[move] = next_player
+        return T3Board("".join(new_board_state))
