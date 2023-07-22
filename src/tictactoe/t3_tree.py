@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List, Tuple, Type, Union
+from typing import Dict, List, Tuple, Type
 
 from .t3_board import T3Board
 
@@ -11,13 +11,20 @@ class Node:
 
 
 class T3Tree:
-    def __init__(self, input_board: T3Board) -> None:
+    def __init__(self, input_board: T3Board, build_tree: bool = True) -> None:
         self.root = Node(input_board)
-        if self.root.board.is_valid_game_state():
-            self.table: Dict[str, Type["Node"]] = {}
-            self.build_tree()
-        else:
-            raise ValueError("Invalid board")
+        self.table: Dict[str, Type["Node"]] = {}
+        if build_tree:
+            if self.root.board.is_valid_game_state():
+                self.build_tree()
+            else:
+                raise ValueError("Invalid board")
+
+    @classmethod
+    def from_root(cls, root_node: Node) -> "T3Tree":
+        new_tree = cls(root_node.board, build_tree=False)
+        new_tree.root.childs = root_node.childs
+        return new_tree
 
     def build_tree(self) -> None:
         def dfs(node):
@@ -30,17 +37,20 @@ class T3Tree:
                     + node.board.state[move_index + 1 :]
                 )
                 new_board = T3Board(new_board)
-                if new_board in self.table:
-                    node.childs.append(self.table[new_board])
+                if new_board.state in self.table:
+                    node.childs.append(self.table[new_board.state])
                 else:
                     child = Node(new_board)
-                    self.table[new_board] = child
+                    self.table[new_board.state] = child
                     node.childs.append(child)
                     if not child.board.get_winner():
                         dfs(child)
 
         if not self.root.board.get_winner():
             dfs(self.root)
+
+    def get_tree_from_board(self, board) -> Type["Node"] | None:
+        return self.table.get(board.state)
 
     def minimax(self, node: Type["Node"], max_player_turn, max_player) -> int:
         state = node.board.get_winner()
@@ -53,6 +63,7 @@ class T3Tree:
             self.minimax(child, not max_player_turn, max_player)
             for child in node.childs
         ]
+
         return max(scores) if max_player_turn else min(scores)
 
     def get_scores(self) -> List[Tuple[int, Type["Node"]]]:
@@ -67,28 +78,33 @@ class T3Tree:
 
     def get_best_moves(
         self, best_score: int, scores: List[Tuple[int, Type["Node"]]]
-    ) -> List[Dict[str, Union[str, int, None]]]:
+    ) -> List[Tuple[int, str]]:
         best_moves = []
         for score, node in scores:
             if score == best_score:
                 move = self.root.board.find_move_position(node.board.state)
-                best_moves.append({"move": move, "post_move_board": node.board.state})
+                if move is not None:
+                    best_moves.append(
+                        (
+                            move,
+                            node.board.state,
+                        )
+                    )
         return best_moves
 
     def get_best_next_moves(
         self,
-    ) -> List[Dict[str, Union[str, int, None]]]:
+    ) -> List[Tuple[int, str]]:
         scores = self.get_scores()
         best_score = self.get_best_score(scores)
         return self.get_best_moves(best_score, scores)
 
     def get_best_next_move(
         self,
-    ) -> Dict[str, Union[str, int, None]]:
+    ) -> Tuple[int, str]:
         next_moves = self.get_best_next_moves()
-        if len(next_moves) > 1:
-            return random.choice(next_moves)
-        return next_moves[0] if next_moves else {}
+
+        return random.choice(next_moves)
 
     def get_stats_from_childs(self):
         res = []
@@ -121,7 +137,6 @@ class T3Tree:
 
 if __name__ == "__main__":
     BOARD = T3Board("    X    ")
-    # BOARD = T3Board(["X", " ", " ", " ", " ", " ", " ", "O", " "])
     if BOARD.get_winner() is None:
         tree = T3Tree(BOARD)
         print(tree.get_best_next_moves())

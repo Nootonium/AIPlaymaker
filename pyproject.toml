@@ -11,6 +11,10 @@ readme = "README.md"
 python = "^3.10"
 Flask = "^2.3.2"
 flask-restful = "^0.3.9"
+torch = "^1.13.1"
+numpy = "^1.25.1"
+panda = "^0.3.1"
+tqdm = "^4.65.0"
 
 
 [tool.poetry.group.dev.dependencies]

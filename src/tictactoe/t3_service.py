@@ -5,69 +5,87 @@ from .t3_board import T3Board
 from .t3_tree import T3Tree
 from .t3_converter import T3Converter
 from .t3_constants import BoardFormats
+from .t3_net import T3Net, load_model, predict_move
 
-from ..exceptions import InvalidBoardException
+from ..exceptions import InvalidBoardException, InvalidActionException
 
 
 class T3Service:
-    def get_next_move(self, input_board) -> dict:
-        is_valid, board_format = T3Converter.validate_board(input_board)
+    def __init__(self) -> None:
+        model = T3Net(216)
+        self.model = load_model(model, "src/tictactoe/models/model_216_0.0003_23.pth")
 
+    def get_board(self, input_board):
+        is_valid, board_format = T3Converter.validate_board(input_board)
         if not is_valid:
             raise InvalidBoardException()
-
         board = T3Board(
             T3Converter.convert_to_internal_format(input_board, board_format)
         )
+        return board, board_format
+
+    def build_response(self, move, post_move_board, board_format) -> dict:
+        post_move_board = T3Converter.convert_from_internal_format(
+            post_move_board, board_format
+        )
+        return {"move": move, "post_move_board": post_move_board}
+
+    def get_next_move(self, input_board, strategy) -> dict:
+        if strategy == "ml":
+            return self.get_next_ml_move(input_board)
+        else:
+            return self.get_next_algo_move(input_board)
+
+    def get_next_moves(self, input_board, strategy) -> list:
+        if strategy == "ml":
+            raise InvalidActionException("ML strategy does not support multiple moves")
+        else:
+            return self.get_next_algo_moves(input_board)
+
+    def get_next_algo_move(self, input_board) -> dict:
+        board, board_format = self.get_board(input_board)
+
         if board.is_empty():
-            return self.random_move_on_empty_board()
+            return self.random_move_on_empty_board(board_format)
 
         tree = T3Tree(board)
         best_move = tree.get_best_next_move()
 
-        if best_move:
-            self.convert_back_to_external_format(best_move, board_format)
+        if best_move is None:
+            raise Exception("No best move found")
 
-        return best_move
+        move, post_move_board = best_move
 
-    def get_next_moves(self, input_board) -> list:
-        is_valid, board_format = T3Converter.validate_board(input_board)
+        return self.build_response(move, post_move_board, board_format)
 
-        if not is_valid:
-            raise InvalidBoardException()
-
-        board = T3Board(
-            T3Converter.convert_to_internal_format(input_board, board_format)
-        )
+    def get_next_algo_moves(self, input_board) -> list:
+        board, board_format = self.get_board(input_board)
         response = []
         if board.is_empty():
-            response = self.all_possible_moves_on_empty_board()
+            response = self.all_possible_moves_on_empty_board(board_format)
         else:
             tree = T3Tree(board)
-            response = tree.get_best_next_moves()
-
-        for move in response:
-            self.convert_back_to_external_format(move, board_format)
+            best_moves = tree.get_best_next_moves()
+            for move, post_move_board in best_moves:
+                response.append(
+                    self.build_response(move, post_move_board, board_format)
+                )
 
         return response
 
-    def random_move_on_empty_board(self) -> dict:
+    def random_move_on_empty_board(self, board_format) -> dict:
         choice = random.choice(range(9))
-        new_board = T3Board("" * 9)
-        post_move_board = new_board.get_next_possible_moves()[choice]
-        return {"move": choice, "post_move_board": post_move_board}
+        empty_board = T3Board(" " * 9)
+        new_board = empty_board.make_move(choice)
+        return self.build_response(choice, new_board.state, board_format)
 
-    def all_possible_moves_on_empty_board(self) -> list:
+    def all_possible_moves_on_empty_board(self, board_format) -> list:
         empty_board = T3Board(" " * 9)
 
         ans = []
-        for move_index in empty_board.get_next_possible_moves():
-            new_board = (
-                empty_board.state[:move_index]
-                + "X"
-                + empty_board.state[move_index + 1 :]
-            )
-            ans.append({"move": move_index, "post_move_board": new_board})
+        for move in range(9):
+            new_board = empty_board.make_move(move)
+            ans.append(self.build_response(move, new_board.state, board_format))
         return ans
 
     def convert_back_to_external_format(
@@ -78,3 +96,11 @@ class T3Service:
                 move["post_move_board"], board_format
             )
         return move
+
+    def get_next_ml_move(self, input_board) -> dict:
+        board, board_format = self.get_board(input_board)
+
+        move = predict_move(self.model, board)
+        new_board = board.make_move(move)
+
+        return self.build_response(move, new_board.state, board_format)
