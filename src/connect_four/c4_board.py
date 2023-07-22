@@ -13,6 +13,17 @@ class C4Board:
         if not self.is_valid_game_state():
             raise ValueError("Invalid board")
 
+    def __str__(self) -> str:
+        rows, columns = self.dimensions
+        lines = []
+        for row in range(rows):
+            lines.append(
+                "".join(
+                    self.state[i] for i in range(row * columns, (row + 1) * columns)
+                )
+            )
+        return "\n".join(reversed(lines))
+
     def has_floating_piece(self) -> bool:
         rows, columns = self.dimensions
         grid = [list(self.state[i * columns : (i + 1) * columns]) for i in range(rows)]
@@ -83,6 +94,8 @@ class C4Board:
         return None
 
     def get_winner(self) -> str | None:
+        if len(self.get_next_possible_moves()) == 0:
+            return " "
         rows, columns = self.dimensions
         state = self.state
         game_state = [state[i : i + columns] for i in range(0, len(state), columns)]

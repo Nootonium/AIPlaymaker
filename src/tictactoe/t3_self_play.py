@@ -5,7 +5,7 @@ from .t3_net import predict_move
 
 
 class Player:
-    def make_move(self, board: T3Board):
+    def make_move(self, board: T3Board) -> T3Board:
         print(board)
         moves = board.get_next_possible_moves()
         move = int(input(f"Enter move {moves}: "))
@@ -13,7 +13,7 @@ class Player:
 
 
 class MinimaxPlayer(Player):
-    def make_move(self, board):
+    def make_move(self, board) -> T3Board:
         tree = T3Tree(board)
         _, str_board = tree.get_best_next_move()
         return T3Board(str_board)
@@ -23,7 +23,7 @@ class NeuralNetPlayer(Player):
     def __init__(self, model):
         self.model = model
 
-    def make_move(self, board):
+    def make_move(self, board) -> T3Board:
         move = predict_move(self.model, board)
         return board.make_move(move)
 
@@ -38,7 +38,7 @@ def play_game(player1, player2):
     return game.get_winner(), game.state
 
 
-def play_games(player1, player2, num_games=100):
+def play_games(player1, player2, num_games=100) -> list[int]:
     scores = [0, 0, 0]
     for _ in tqdm(range(num_games)):
         res, state = play_game(player1, player2)

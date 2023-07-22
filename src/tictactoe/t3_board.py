@@ -4,7 +4,7 @@ from .t3_constants import WINNING, VALID_MOVES
 
 
 class T3Board:
-    def __init__(self, input_board: str) -> None:
+    def __init__(self, input_board: str):
         self.state = input_board
         if not self.is_valid_game_state():
             raise ValueError("Invalid board")

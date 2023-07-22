@@ -1,6 +1,6 @@
 from ..exceptions import InvalidBoardException, GameFinishedException
 from .c4_board import C4Board
-from .c4_mcts import C4Node, C4MCTS
+from .c4_mcts import C4MCTreeSearch
 from .c4_converter import C4Converter
 
 
@@ -18,14 +18,11 @@ class C4Service:
         if board.get_winner() is not None:
             raise GameFinishedException()
 
-        root = C4Node(board)
-        mcts = C4MCTS(root)
+        mcts = C4MCTreeSearch(board)
 
-        res = mcts.run(1000)
-        move = board.find_move_position(res)
-        if res:
-            post_move_board = C4Converter.convert_from_internal_format(
-                res, board_format
-            )
+        res = mcts.run(4500)
+
+        move = board.find_move_position(res.state)
+        post_move_board = C4Converter.convert_from_internal_format(res, board_format)
 
         return {"move": move, "post_move_board": post_move_board}

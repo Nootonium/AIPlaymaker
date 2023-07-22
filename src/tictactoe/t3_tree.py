@@ -1,5 +1,5 @@
 import random
-from typing import Dict, List, Tuple, Type, Union
+from typing import Dict, List, Tuple, Type
 
 from .t3_board import T3Board
 
@@ -101,7 +101,7 @@ class T3Tree:
 
     def get_best_next_move(
         self,
-    ) -> Tuple[int, str] | None:
+    ) -> Tuple[int, str]:
         next_moves = self.get_best_next_moves()
 
         return random.choice(next_moves)

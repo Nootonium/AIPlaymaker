@@ -1,24 +1,22 @@
-import time
 import torch
-from torch import nn, optim
+from torch import nn, optim, sigmoid, argmax, from_numpy  # mypy: ignore
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
-from tqdm import tqdm
+
 from .t3_data_generator import DataGenerator
 from .t3_converter import encode_board, encode_moves
 from .t3_net import T3Net
-from .t3_self_play import play_games
 
 
 def calculate_accuracy(logits, targets):
     # Convert logits to class probabilities
-    probabilities = torch.sigmoid(logits)
+    probabilities = sigmoid(logits)
 
     # Find the class with the highest probability
-    predicted_classes = torch.argmax(probabilities, dim=1)
+    predicted_classes = argmax(probabilities, dim=1)
 
     # Find the true class
-    true_classes = torch.argmax(targets, dim=1)
+    true_classes = argmax(targets, dim=1)
 
     # Check where predicted and true classes match
     correct_predictions = predicted_classes == true_classes
@@ -38,17 +36,9 @@ def data_setup():
     encoded_data = encoded_data.reshape(-1, 27)
     encoded_labels = np.array([encode_moves(moves) for _, moves in data])
 
-    """
-    print(encoded_data[0])
-    print(encoded_data[0].shape)
-    print(encoded_labels.shape)
-    print(encoded_labels[0])
-    input("Press Enter to continue...")
-    """
-
     # Create PyTorch tensors from your data
-    data_torch = torch.from_numpy(encoded_data).float()
-    labels_torch = torch.from_numpy(encoded_labels).float()
+    data_torch = from_numpy(encoded_data).float()
+    labels_torch = from_numpy(encoded_labels).float()
 
     # Create a Dataset from your input data and labels
     dataset = TensorDataset(data_torch, labels_torch)
@@ -105,7 +95,7 @@ def train(epochs, model, criterion, optimizer, train_loader, test_loader):
 
 
 if __name__ == "__main__":
-    train_loader, test_loader = data_setup()
+    """train_loader, test_loader = data_setup()
     n = 216
     lr = 0.0003
     model, criterion, optimizer = model_setup(n, lr)
@@ -113,7 +103,7 @@ if __name__ == "__main__":
         print(f"Epoch: {epoch+1}")
         model = train(1, model, criterion, optimizer, train_loader, test_loader)
         score = play_games(model, 100)
-        """if score[0] == 0:
+        if score[0] == 0:
             torch.save(
                 model.state_dict(), f"tictactoe/models/model_{n}_{lr}_{epoch+1}.pth"
             )"""

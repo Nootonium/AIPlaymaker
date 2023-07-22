@@ -12,8 +12,8 @@ from ..exceptions import InvalidBoardException, InvalidActionException
 
 class T3Service:
     def __init__(self) -> None:
-        model = T3Net()
-        self.model = load_model(model, "src/resources/models/model_216_0.0003_23.pth")
+        model = T3Net(216)
+        self.model = load_model(model, "src/tictactoe/models/model_216_0.0003_23.pth")
 
     def get_board(self, input_board):
         is_valid, board_format = T3Converter.validate_board(input_board)
@@ -75,7 +75,7 @@ class T3Service:
 
     def random_move_on_empty_board(self, board_format) -> dict:
         choice = random.choice(range(9))
-        empty_board = T3Board("" * 9)
+        empty_board = T3Board(" " * 9)
         new_board = empty_board.make_move(choice)
         return self.build_response(choice, new_board.state, board_format)
 
@@ -103,4 +103,4 @@ class T3Service:
         move = predict_move(self.model, board)
         new_board = board.make_move(move)
 
-        return {"move": move, "post_move_board": new_board}
+        return self.build_response(move, new_board.state, board_format)
