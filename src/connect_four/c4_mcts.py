@@ -1,7 +1,8 @@
 import time
 import math
 import random
-from typing import List, Optional, Union
+import numpy as np
+from typing import Dict, List, Optional, Union
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -37,6 +38,13 @@ class C4Node:
                     (child.wins / child.visits)
                     + c_param * ((2 * math.log(self.visits) / child.visits) ** 0.5)
                 )
+            if child_score != float("inf"):
+                position = self.board.find_move_position(child.board.state)
+                if child.board.blocks_opponent_win(
+                    position, self.board.get_next_player()
+                ):
+                    child_score += 100
+
             if child_score > best_score:
                 best_score = child_score
                 best_child = child
@@ -45,17 +53,38 @@ class C4Node:
             raise Exception("No best child found. Children: " + str(message))
         return best_child
 
+    def get_q_values(self) -> Dict[int, float]:
+        q_values = {}
+        for child in self.children:
+            _, action = self.board.find_move_position(child.board.state)
+            q_value = 0.0
+            if child.visits > 0:
+                q_value = float(child.wins) / child.visits
+            q_values[action] = q_value
+        return q_values
+
+    def get_probs(self, temperature=1) -> Dict[int, float]:
+        q_values = self.get_q_values()
+        values = np.array(list(q_values.values()))
+        values /= temperature
+
+        # Softmax function for converting Q-values to probabilities
+        probs = np.exp(values) / np.sum(np.exp(values))
+
+        return dict(zip(q_values.keys(), probs))
+
 
 class C4MCTreeSearch:
-    def __init__(self, input_board: C4Board):
+    def __init__(self, input_board: C4Board, c_param=1.4):
         self.root = C4Node(input_board)
+        self.c_param = c_param
 
     def selection(self) -> Optional[C4Node]:
         current_node = self.root
         while current_node.fully_expanded():
             if len(current_node.board.get_next_possible_moves()) == 0:
                 return None
-            node = current_node.best_child()
+            node = current_node.best_child(self.c_param)
             if node is None:  # to satisfy mypy
                 return None
             current_node = node
@@ -64,7 +93,7 @@ class C4MCTreeSearch:
     def expansion(self, node: C4Node):
         possible_moves = node.board.get_next_possible_moves()
         for move in possible_moves:
-            next_board = node.board.with_move(move, node.board.get_next_player())
+            next_board = node.board.with_move(move)
             child_node = C4Node(next_board, node)
             node.add_child(child_node)
 
@@ -72,9 +101,7 @@ class C4MCTreeSearch:
         current_board = node.board
         while current_board.get_winner() is None:
             move = random.choice(current_board.get_next_possible_moves())
-            current_board = current_board.with_move(
-                move, current_board.get_next_player()
-            )
+            current_board = current_board.with_move(move)
         winner = current_board.get_winner()
         agent_to_make_move = self.root.board.get_next_player()
         if winner == agent_to_make_move:
@@ -100,18 +127,13 @@ class C4MCTreeSearch:
         with ThreadPoolExecutor(max_workers=num_threads) as executor:
             for _ in range(iterations):
                 executor.submit(self.run_simulation)
-        return self.root.best_child().board
+
+        return self.root.best_child(self.c_param).board
 
 
 if __name__ == "__main__":
     board = C4Board((6, 7), "11  22" + " " * 36)
-    mcts = C4MCTreeSearch(board)
-    start_time = time.time()
-    new_board = mcts.run(1000)
-    end_time = time.time()
-    print("Time to run: ", end_time - start_time)
-    print(board.find_move_position(new_board.state))
-    print(new_board.state.replace(" ", "_"))
+
     """for child in mcts.root.children:
         print(
             "Board:",

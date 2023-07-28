@@ -1,4 +1,7 @@
 from typing import Tuple
+import numpy as np
+
+from .c4_board import C4Board
 from .c4_constants import VALID_MOVES, BoardFormats
 
 
@@ -75,3 +78,21 @@ class C4Converter:
             if not isinstance(cell, str) or len(cell) != 1 or cell not in VALID_MOVES:
                 return False
         return True
+
+
+def encode_board(board: C4Board) -> np.ndarray:
+    rows, columns = board.dimensions
+    p1_board = [[0] * columns for _ in range(rows)]
+    p2_board = [[0] * columns for _ in range(rows)]
+
+    for i in range(rows):
+        for j in range(columns):
+            position = i * columns + j
+            if board.state[position] == "1":
+                p1_board[i][j] = 1
+            elif board.state[position] == "2":
+                p2_board[i][j] = 1
+
+    encoded_board = np.array([p1_board, p2_board])
+
+    return encoded_board

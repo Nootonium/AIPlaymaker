@@ -17,11 +17,16 @@ class C4Board:
         rows, columns = self.dimensions
         lines = []
         for row in range(rows):
-            lines.append(
-                "".join(
-                    self.state[i] for i in range(row * columns, (row + 1) * columns)
-                )
-            )
+            line = []
+            for i in range(row * columns, (row + 1) * columns):
+                if self.state[i] == "1":
+                    line.append("\033[31mO\033[0m")  # Red color for 'X'
+                elif self.state[i] == "2":
+                    line.append("\033[34mO\033[0m")  # Blue color for 'O'
+                else:
+                    line.append("-")
+            lines.append(" | ".join(line))
+        lines.append("-" * ((4 * columns) - 1))  # Add a bottom line to the board
         return "\n".join(reversed(lines))
 
     def has_floating_piece(self) -> bool:
@@ -54,9 +59,10 @@ class C4Board:
                     break
         return possible_moves
 
-    def with_move(self, column: int, player: Literal["1", "2"]) -> "C4Board":
+    def with_move(self, column: int) -> "C4Board":
         # returns a new board with the move made
         rows, columns = self.dimensions
+        next_player = self.get_next_player()
         if not (0 <= column < columns):
             raise ValueError(f"Column {column} is out of range")
 
@@ -65,7 +71,7 @@ class C4Board:
             if new_state[i * columns + column] == " ":
                 new_state = (
                     new_state[: i * columns + column]
-                    + player
+                    + next_player
                     + new_state[i * columns + column + 1 :]
                 )
                 return C4Board(self.dimensions, new_state)
@@ -80,7 +86,7 @@ class C4Board:
         rows, columns = self.dimensions
         return self.state == (" " * rows * columns)
 
-    def find_move_position(self, new_board: str) -> int | None:
+    def find_move_position(self, new_board: str) -> Tuple[int, int]:
         rows, columns = self.dimensions
         diff_positions = [
             i for i in range(rows * columns) if self.state[i] != new_board[i]
@@ -89,9 +95,11 @@ class C4Board:
             raise ValueError(
                 "Invalid board state: more than one move was made in a single turn"
             )
-        if diff_positions:
-            return diff_positions.pop() % columns
-        return None
+        if len(diff_positions) == 0:
+            raise ValueError("Invalid board state: no move was made")
+
+        position = diff_positions.pop()
+        return position // columns, position % columns
 
     def get_winner(self) -> str | None:
         if len(self.get_next_possible_moves()) == 0:
@@ -126,3 +134,36 @@ class C4Board:
         if " " in state:
             return None
         return " "
+
+    def blocks_opponent_win(self, position: Tuple[int, int], player: str) -> bool:
+        rows, columns = self.dimensions
+        opponent = "2" if player == "1" else "1"
+        game_state = [
+            self.state[i : i + columns] for i in range(0, len(self.state), columns)
+        ]
+
+        directions = [
+            (0, 1),
+            (1, 0),
+            (-1, 0),
+            (0, -1),
+            (1, 1),
+            (-1, -1),
+            (1, -1),
+            (-1, 1),
+        ]
+
+        for dx, dy in directions:
+            for direction in [-1, 1]:  # This lets us look in both directions at once.
+                count = 0
+                x, y = position[0] + direction * dx, position[1] + direction * dy
+                while 0 <= x < rows and 0 <= y < columns:
+                    if game_state[x][y] == opponent:
+                        count += 1
+                    elif game_state[x][y] == " " or game_state[x][y] == player:
+                        break
+                    x, y = x + direction * dx, y + direction * dy
+                if count >= 3:
+                    return True
+
+        return False

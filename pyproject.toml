@@ -15,6 +15,7 @@ torch = "^1.13.1"
 numpy = "^1.25.1"
 panda = "^0.3.1"
 tqdm = "^4.65.0"
+h5py = "^3.9.0"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -99,9 +99,8 @@ def test_given_valid_move_when_with_move_then_return_updated_board():
     state = " " * 42
     board = C4Board(dimensions, state)
     column = 0
-    player = "1"
     # When we make the move with the with_move method
-    new_board = board.with_move(column, player)
+    new_board = board.with_move(column)
     # Then it should return an updated board
     assert new_board.state == "1" + " " * 41
 
@@ -112,11 +111,10 @@ def test_given_out_of_range_move_when_with_move_then_raise_error():
     state = " " * 42
     board = C4Board(dimensions, state)
     column = 7  # Out of range
-    player = "1"
     # When we try to make the move with the with_move method
     # Then it should raise a ValueError
     with pytest.raises(ValueError, match="Column 7 is out of range"):
-        board.with_move(column, player)
+        board.with_move(column)
 
 
 def test_given_full_column_when_with_move_then_raise_error():
@@ -127,11 +125,10 @@ def test_given_full_column_when_with_move_then_raise_error():
         state = state[: 7 * i] + "1" + state[7 * i + 1 :]
     board = C4Board(dimensions, state)
     column = 0  # Full column
-    player = "1"
     # When we try to make the move with the with_move method
     # Then it should raise a ValueError
     with pytest.raises(ValueError, match="Column 0 is full"):
-        board.with_move(column, player)
+        board.with_move(column)
 
 
 def test_given_empty_board_when_is_empty_then_return_true():
@@ -181,22 +178,24 @@ def test_given_one_difference_when_find_move_position_then_return_diff_position(
 
     # When we try to find the move position with a new state that has one difference
     new_state = "1" + " " * 41  # one move has been made
-    diff_position = board.find_move_position(new_state)
+    row, col = board.find_move_position(new_state)
 
-    # Then it should return the position of the difference
-    assert diff_position == 0
+    # Then it should return the position of the move
+    assert row == 0
+    assert col == 0
 
 
-def test_given_no_difference_when_find_move_position_then_return_none():
+def test_given_no_difference_when_find_move_position_then_raise_error():
     # Given a board with an initial state
     initial_state = " " * 42
     board = C4Board((6, 7), initial_state)
 
     # When we try to find the move position with the same state (no difference)
-    diff_position = board.find_move_position(initial_state)
+    # Then it should raise a ValueError
+    with pytest.raises(ValueError) as e:
+        board.find_move_position(initial_state)
 
-    # Then it should return None
-    assert diff_position is None
+    assert str(e.value) == "Invalid board state: no move was made."
 
 
 def test_given_diagonal_win_when_get_winner_then_return_winner():

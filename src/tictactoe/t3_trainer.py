@@ -58,6 +58,7 @@ def model_setup(hid_size=227, lr=0.01):
 
 
 def train(epochs, model, criterion, optimizer, train_loader, test_loader):
+    model.train()
     for epoch in range(epochs):
         total_loss = 0
         total_accuracy = 0

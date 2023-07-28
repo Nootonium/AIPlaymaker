@@ -22,7 +22,7 @@ class C4Service:
 
         res = mcts.run(4500)
 
-        move = board.find_move_position(res.state)
+        _, col = board.find_move_position(res.state)
         post_move_board = C4Converter.convert_from_internal_format(res, board_format)
 
-        return {"move": move, "post_move_board": post_move_board}
+        return {"move": col, "post_move_board": post_move_board}

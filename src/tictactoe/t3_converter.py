@@ -70,9 +70,9 @@ class T3Converter:
         return True
 
 
-def encode_board(board):
+def encode_board(board_state: str) -> np.ndarray:
     mapping = {"X": [1, 0, 0], "O": [0, 1, 0], " ": [0, 0, 1]}
-    return np.array([mapping[char] for char in board])
+    return np.array([mapping[char] for char in board_state])
 
 
 def encode_moves(moves):
