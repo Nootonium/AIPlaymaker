@@ -36,7 +36,7 @@ class C4Dag:
 
 
 if __name__ == "__main__":
-    board = C4Board((6, 7), "1212121" + " " * (6 * 7 - 7))
+    board = C4Board((6, 7), "121212 " + "212121 " + "121212 " + " " * 21)
     start_time = time.time()
     dag = C4Dag(board)
     end_time = time.time()

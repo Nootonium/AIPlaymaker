@@ -1,9 +1,8 @@
 import time
 import math
 import random
-import numpy as np
 from typing import Dict, List, Optional, Union
-from concurrent.futures import ThreadPoolExecutor
+import numpy as np
 
 
 from .c4_board import C4Board
@@ -123,10 +122,9 @@ class C4MCTreeSearch:
         result = self.simulation(selected_node)
         self.backpropagation(selected_node, result)
 
-    def run(self, iterations, num_threads=4):
-        with ThreadPoolExecutor(max_workers=num_threads) as executor:
-            for _ in range(iterations):
-                executor.submit(self.run_simulation)
+    def run(self, iterations):
+        for _ in range(iterations):
+            self.run_simulation()
 
         return self.root.best_child(self.c_param).board
 
@@ -134,12 +132,8 @@ class C4MCTreeSearch:
 if __name__ == "__main__":
     board = C4Board((6, 7), "11  22" + " " * 36)
 
-    """for child in mcts.root.children:
-        print(
-            "Board:",
-            child.board.state.replace(" ", "_"),
-            "wins:",
-            child.wins,
-            " visits:",
-            child.visits,
-        )"""
+    start_time = time.time()
+    mcts = C4MCTreeSearch(board, 0.9)
+    new_board = mcts.run(3500)
+    end_time = time.time()
+    print(f"Time to run MCTS at 1 thread: {end_time - start_time}")
