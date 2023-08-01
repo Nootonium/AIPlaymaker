@@ -170,8 +170,9 @@ if __name__ == "__main__":
     """ss, sq, sa, sall_q, sall_p = load_data("connect_four/data/game_data.h5")
     print(ss.shape, sa.shape, sq.shape, len(sall_q), len(sall_p))
     input("This will overwrite the data files. Press enter to continue...")"""
+
     for _ in range(10):
         s, a, q, all_q, all_p = generate_data(
-            100, 3500, "connect_four/data/seen_states.pkl"
+            10, 3500, "connect_four/data/seen_states.pkl"
         )
         save_data(s, a, q, all_q, all_p, "connect_four/data/game_data.h5")

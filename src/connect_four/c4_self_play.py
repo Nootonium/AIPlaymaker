@@ -7,7 +7,6 @@ from torch import load
 from .c4_board import C4Board
 from .c4_mcts import C4MCTreeSearch
 from .c4_converter import encode_board
-from .c4_net import Connect4Net
 
 
 class Player:
@@ -57,10 +56,10 @@ class NeuralNetPlayer(Player):
         move = torch.argmax(q_values).item()
         if move not in board.get_next_possible_moves():
             print("Model is trying to make an invalid move.")
-            print(f"Board: {board}")
-            print(f"Q values: {q_values}")
-            print(f"Move: {move}")
-            print(f"Possible moves: {board.get_next_possible_moves()}")
+            # print(f"Board: {board}")
+            # print(f"Q values: {q_values}")
+            # print(f"Move: {move}")
+            # print(f"Possible moves: {board.get_next_possible_moves()}")
             move = random.choice(board.get_next_possible_moves())
         return board.with_move(move)
 
@@ -83,7 +82,6 @@ def play_game(player1: Player, player2: Player):
         if board.get_winner() is not None:
             break
         board = player2.make_move(board)
-    print(board)
     res = board.get_winner()
     if res == "1":
         player1.won()
@@ -136,9 +134,9 @@ def tune_c_param():
 
 
 if __name__ == "__main__":
-    p1 = MCTSPlayer(3500, 1.4)
-    model = Connect4Net(7)
+    p1 = MCTSPlayer(3500, 0.9)
+    """model = Connect4Net(7)
     model.load_state_dict(load("connect_four/models/first.pth"))
-    model.eval()
-    p2 = NeuralNetPlayer(model)
-    play_games(p1, p2, 2)
+    model.eval()"""
+    p2 = Player()
+    play_games(p1, p2, 10)
