@@ -1,7 +1,7 @@
+import json
 import torch
 from torch import nn, optim
 from torch.utils.data import TensorDataset, DataLoader
-
 import numpy as np
 from .c4_nets import Connect4Net
 from .c4_data_generator import load_data
@@ -89,7 +89,7 @@ def train_loop(
     opponent,
     games_to_play=20,
     epochs=13,
-    patience=3,
+    patience=2,
     verbose=False,
 ):
     best_score = 0
@@ -98,7 +98,7 @@ def train_loop(
 
     for epoch in range(epochs):
         if verbose:
-            print(f"Training model with {lr} learning rate, epoch {epoch+1}/{epochs}")
+            print(f"Training model for epoch {epoch + 1}/{epochs}")
 
         train(model, criterion, optimizer, train_loader)
         score = evaluate(model, opponent, games_to_play, verbose=verbose)
@@ -118,12 +118,9 @@ def train_loop(
     return best_epoch, best_score
 
 
-if __name__ == "__main__":
-    trainData = setup_training_data()
+def run_training(lr: float):
+    train_data = setup_training_data()
     mcts_agent = MCTSPlayer(250, 0.9)
-
-    lr = 0.0003
-    import json
 
     with open("connect_four/models/conv_configs.json", "r", encoding="utf-8") as file:
         conv_configs = json.load(file)
@@ -135,15 +132,26 @@ if __name__ == "__main__":
     for conv_config in conv_configs:
         for fc_config in fc_configs:
             new_model = Connect4Net(conv_config, fc_config).to(device)
-
             model, criterion, optimizer = model_setup(new_model, lr)
             epoch, score = train_loop(
-                model, criterion, optimizer, trainData, mcts_agent, verbose=True
+                model,
+                criterion,
+                optimizer,
+                train_data,
+                mcts_agent,
+                verbose=True,
+                games_to_play=25,
             )
-            results.append((score, conv_config["name"], fc_config["name"]))
+            results.append((score, conv_config["name"], fc_config["name"], epoch))
 
     results.sort(key=lambda x: -x[0])
 
     print("Ranking:")
-    for rank, (score, conv_name, fc_name) in enumerate(results):
-        print(f"{rank + 1}. Conv: {conv_name}, FC: {fc_name}, Score: {score}")
+    for rank, (score, conv_name, fc_name, epoch) in enumerate(results):
+        print(
+            f"{rank + 1}. Conv: {conv_name}, FC: {fc_name}, Score: {score}, Epoch: {epoch}"
+        )
+
+
+if __name__ == "__main__":
+    run_training(0.0003)

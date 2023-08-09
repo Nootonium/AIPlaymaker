@@ -1,3 +1,6 @@
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
+
 import time
 import math
 import random
@@ -24,32 +27,34 @@ class C4Node:
         self.wins += result
 
     def fully_expanded(self) -> bool:
-        return len(self.children) == len(self.board.get_next_possible_moves())
+        moves = len(self.board.get_next_possible_moves())
+        return len(self.children) == moves and moves > 0
+
+    def _child_score(self, child, c_param):
+        if child.visits == 0:
+            return float("inf")
+
+        ucb_score = (child.wins / child.visits) + c_param * (
+            (2 * math.log(self.visits) / child.visits) ** 0.5
+        )
+
+        position = self.board.find_move_position(child.board.state)
+        if child.board.blocks_opponent_win(position, self.board.get_next_player()):
+            ucb_score += 100
+
+        return ucb_score
 
     def best_child(self, c_param: Union[int, float] = 1.4) -> Optional["C4Node"]:
-        best_score = float("-inf")
-        best_child = None
-        for child in self.children:
-            if child.visits == 0:
-                child_score = float("inf")
-            else:
-                child_score = float(
-                    (child.wins / child.visits)
-                    + c_param * ((2 * math.log(self.visits) / child.visits) ** 0.5)
-                )
-            if child_score != float("inf"):
-                position = self.board.find_move_position(child.board.state)
-                if child.board.blocks_opponent_win(
-                    position, self.board.get_next_player()
-                ):
-                    child_score += 100
+        best_child = max(
+            self.children,
+            key=lambda child: self._child_score(child, c_param),
+            default=None,
+        )
 
-            if child_score > best_score:
-                best_score = child_score
-                best_child = child
-        if best_child is None:  # TODO: replace with logging
+        if best_child is None:
             message = len(self.children)
             raise Exception("No best child found. Children: " + str(message))
+
         return best_child
 
     def get_q_values(self) -> Dict[int, float]:
@@ -73,16 +78,28 @@ class C4Node:
         return dict(zip(q_values.keys(), probs))
 
 
+def simulate_game(node: C4Node, agent_to_make_move: str):
+    current_board = node.board
+    while current_board.get_winner() is None:
+        move = random.choice(current_board.get_next_possible_moves())
+        current_board = current_board.with_move(move)
+    winner = current_board.get_winner()
+    if winner == agent_to_make_move:
+        return 1
+    if winner == " ":
+        return 0
+    return -1
+
+
 class C4MCTreeSearch:
     def __init__(self, input_board: C4Board, c_param=1.4):
         self.root = C4Node(input_board)
         self.c_param = c_param
+        self.backpropagation_lock = Lock()
 
     def selection(self) -> Optional[C4Node]:
         current_node = self.root
         while current_node.fully_expanded():
-            if len(current_node.board.get_next_possible_moves()) == 0:
-                return None
             node = current_node.best_child(self.c_param)
             if node is None:  # to satisfy mypy
                 return None
@@ -96,35 +113,29 @@ class C4MCTreeSearch:
             child_node = C4Node(next_board, node)
             node.add_child(child_node)
 
-    def simulation(self, node: C4Node):
-        current_board = node.board
-        while current_board.get_winner() is None:
-            move = random.choice(current_board.get_next_possible_moves())
-            current_board = current_board.with_move(move)
-        winner = current_board.get_winner()
-        agent_to_make_move = self.root.board.get_next_player()
-        if winner == agent_to_make_move:
-            return 1
-        if winner == " ":
-            return 0
-        return -1
-
     def backpropagation(self, node, result):
-        while node is not None:
-            node.update(result)
-            node = node.parent
+        with self.backpropagation_lock:
+            while node is not None:
+                node.visits += 1
+                node.wins += result
+                node = node.parent
 
-    def run_simulation(self):
-        selected_node = self.selection()
-        if selected_node is None:
-            return
-        self.expansion(selected_node)
-        result = self.simulation(selected_node)
-        self.backpropagation(selected_node, result)
+    def run(self, iterations, num_threads=4):
+        with ThreadPoolExecutor(max_workers=num_threads) as executor:
+            for _ in range(iterations):
+                selected_node = self.selection()
+                if selected_node is None:
+                    continue
+                self.expansion(selected_node)
 
-    def run(self, iterations):
-        for _ in range(iterations):
-            self.run_simulation()
+                # Use executor to run simulation in parallel
+                future = executor.submit(
+                    simulate_game, selected_node, self.root.board.get_next_player()
+                )
+
+                # Wait for the simulation result and perform backpropagation
+                result = future.result()
+                self.backpropagation(selected_node, result)
 
         return self.root.best_child(self.c_param).board
 
@@ -134,6 +145,8 @@ if __name__ == "__main__":
 
     start_time = time.time()
     mcts = C4MCTreeSearch(board, 0.9)
-    new_board = mcts.run(3500)
+
+    new_board = mcts.run(250)
+
     end_time = time.time()
     print(f"Time to run MCTS at 1 thread: {end_time - start_time}")

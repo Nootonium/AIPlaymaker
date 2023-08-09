@@ -3,6 +3,18 @@ from typing import Literal, Tuple
 from .c4_constants import VALID_MOVES
 
 
+DIRECTIONS = [
+    (0, 1),
+    (1, 0),
+    (-1, 0),
+    (0, -1),
+    (1, 1),
+    (-1, -1),
+    (1, -1),
+    (-1, 1),
+]
+
+
 class C4Board:
     state: str
     dimensions: Tuple[int, int]
@@ -102,7 +114,7 @@ class C4Board:
         return position // columns, position % columns
 
     def _count_consecutive_pieces(self, game_state, start_position, player, direction):
-        rows, columns = len(game_state), len(game_state[0])
+        rows, columns = self.dimensions
         row, col = start_position
         count = 0
         dx, dy = direction
@@ -140,33 +152,16 @@ class C4Board:
     def blocks_opponent_win(self, position: Tuple[int, int], player: str) -> bool:
         rows, columns = self.dimensions
         opponent = "2" if player == "1" else "1"
-        game_state = [
-            self.state[i : i + columns] for i in range(0, len(self.state), columns)
-        ]
 
-        directions = [
-            (0, 1),
-            (1, 0),
-            (-1, 0),
-            (0, -1),
-            (1, 1),
-            (-1, -1),
-            (1, -1),
-            (-1, 1),
-            (-1, -1),
-            (-1, 1),
-            (1, -1),
-            (1, 1),
-        ]
-
-        for dx, dy in directions:
+        for dx, dy in DIRECTIONS:
             count = 0
             x, y = position[0] + dx, position[1] + dy
             while 0 <= x < rows and 0 <= y < columns:
-                if game_state[x][y] == opponent:
-                    count += 1
-                elif game_state[x][y] == " " or game_state[x][y] == player:
+                cell = self.state[x * columns + y]
+                if cell == " " or cell == player:
                     break
+                elif cell == opponent:
+                    count += 1
                 x, y = x + dx, y + dy
             if count >= 3:
                 return True
