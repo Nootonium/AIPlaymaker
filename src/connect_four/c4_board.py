@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Literal, Set, Tuple
+from typing import Literal, Tuple
 from .c4_constants import VALID_MOVES
 
 
@@ -101,6 +101,19 @@ class C4Board:
         position = diff_positions.pop()
         return position // columns, position % columns
 
+    def _count_consecutive_pieces(self, game_state, start_position, player, direction):
+        rows, columns = len(game_state), len(game_state[0])
+        row, col = start_position
+        count = 0
+        dx, dy = direction
+
+        while 0 <= row < rows and 0 <= col < columns and game_state[row][col] == player:
+            count += 1
+            row += dx
+            col += dy
+
+        return count
+
     def get_winner(self) -> str | None:
         if len(self.get_next_possible_moves()) == 0:
             return " "
@@ -108,27 +121,16 @@ class C4Board:
         state = self.state
         game_state = [state[i : i + columns] for i in range(0, len(state), columns)]
 
-        # depth first search to count the number of consecutive pieces
-        # couldve used a for loop but this is more fun
-        def dfs(position, player, direction, visited):
-            row, col = position
-            if (
-                not (0 <= row < rows)
-                or not (0 <= col < columns)
-                or game_state[row][col] != player
-                or (row, col) in visited
-            ):
-                return 0
-            visited.add(position)
-            dx, dy = direction
-            return 1 + dfs((row + dx, col + dy), player, direction, visited)
-
         for r in range(rows):
             for c in range(columns):
                 if game_state[r][c] != " ":
                     for direction in [(0, 1), (1, 0), (1, 1), (1, -1)]:
-                        visited: Set = set()
-                        if dfs((r, c), game_state[r][c], direction, visited) >= 4:
+                        if (
+                            self._count_consecutive_pieces(
+                                game_state, (r, c), game_state[r][c], direction
+                            )
+                            >= 4
+                        ):
                             return game_state[r][c]
 
         if " " in state:
@@ -151,19 +153,22 @@ class C4Board:
             (-1, -1),
             (1, -1),
             (-1, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+            (1, 1),
         ]
 
         for dx, dy in directions:
-            for direction in [-1, 1]:  # This lets us look in both directions at once.
-                count = 0
-                x, y = position[0] + direction * dx, position[1] + direction * dy
-                while 0 <= x < rows and 0 <= y < columns:
-                    if game_state[x][y] == opponent:
-                        count += 1
-                    elif game_state[x][y] == " " or game_state[x][y] == player:
-                        break
-                    x, y = x + direction * dx, y + direction * dy
-                if count >= 3:
-                    return True
+            count = 0
+            x, y = position[0] + dx, position[1] + dy
+            while 0 <= x < rows and 0 <= y < columns:
+                if game_state[x][y] == opponent:
+                    count += 1
+                elif game_state[x][y] == " " or game_state[x][y] == player:
+                    break
+                x, y = x + dx, y + dy
+            if count >= 3:
+                return True
 
         return False

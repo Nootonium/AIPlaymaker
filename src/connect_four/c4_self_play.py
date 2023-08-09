@@ -2,7 +2,7 @@ import random
 from tqdm import tqdm
 import numpy as np
 import torch
-from torch import load
+
 
 from .c4_board import C4Board
 from .c4_mcts import C4MCTreeSearch
@@ -42,6 +42,7 @@ class NeuralNetPlayer(Player):
     def __init__(self, in_model):
         super(NeuralNetPlayer, self).__init__()
         self.model = in_model
+        self.model.eval()
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
     def make_move(self, board):
@@ -53,15 +54,15 @@ class NeuralNetPlayer(Player):
         )
         with torch.inference_mode():
             q_values = self.model(board_state_tensor)
-        move = torch.argmax(q_values).item()
-        if move not in board.get_next_possible_moves():
-            print("Model is trying to make an invalid move.")
-            # print(f"Board: {board}")
-            # print(f"Q values: {q_values}")
-            # print(f"Move: {move}")
-            # print(f"Possible moves: {board.get_next_possible_moves()}")
-            move = random.choice(board.get_next_possible_moves())
-        return board.with_move(move)
+
+        # Get the sorted Q-values and corresponding moves
+        _, sorted_moves = torch.topk(q_values, k=q_values.size(-1))
+
+        for move in sorted_moves[0]:
+            if move.item() in board.get_next_possible_moves():
+                return board.with_move(move.item())
+
+        raise Exception("No valid moves found")
 
 
 class RandomPlayer(Player):
@@ -90,20 +91,22 @@ def play_game(player1: Player, player2: Player):
     return
 
 
-def play_games(player1, player2, num_games=100):
-    for i in tqdm(range(num_games)):
-        if i % 2 == 0:
-            play_game(player1, player2)
-        else:
-            play_game(player2, player1)
+def play_games(player1, player2, num_games=100, verbose=False):
+    iterable = tqdm(range(num_games)) if verbose else range(num_games)
 
-    p1_wins = player1.wins
-    p2_wins = player2.wins
-    draws = num_games - (p1_wins + p2_wins)
+    for i in iterable:
+        players = (player1, player2) if i % 2 == 0 else (player2, player1)
+        play_game(*players)
+
+    draws = num_games - (player1.wins + player2.wins)
+
+    scores = [player1.wins, player2.wins, draws]
+    if verbose:
+        print(
+            f"Player 1 wins: {player1.wins}, Player 2 wins: {player2.wins}, Draws: {draws}"
+        )
     player1.reset_wins()
     player2.reset_wins()
-    scores = [p1_wins, p2_wins, draws]
-    print(f"Player 1 wins: {p1_wins}, Player 2 wins: {p2_wins}, Draws: {draws}")
     return scores
 
 
@@ -134,9 +137,10 @@ def tune_c_param():
 
 
 if __name__ == "__main__":
-    p1 = MCTSPlayer(3500, 0.9)
+    p1 = MCTSPlayer(250, 0.9)
     """model = Connect4Net(7)
     model.load_state_dict(load("connect_four/models/first.pth"))
     model.eval()"""
     p2 = Player()
-    play_games(p1, p2, 10)
+    p2 = MCTSPlayer(3500, 0.9)
+    play_games(p1, p2, 10, verbose=True)

@@ -1,0 +1,78 @@
+[
+  {
+    "name": "2layers_relu",
+    "layers": [
+      {
+        "in_features": 4,
+        "out_features": 512,
+        "activation": "relu"
+      },
+      {
+        "in_features": 512,
+        "out_features": 7
+      }
+    ]
+  },
+  {
+    "name": "3layers_tanh",
+    "layers": [
+      {
+        "in_features": 4,
+        "out_features": 256,
+        "activation": "tanh"
+      },
+      {
+        "in_features": 256,
+        "out_features": 128,
+        "activation": "tanh"
+      },
+      {
+        "in_features": 128,
+        "out_features": 7
+      }
+    ]
+  },
+  {
+    "name": "4layers_mixed",
+    "layers": [
+      {
+        "in_features": 4,
+        "out_features": 1024,
+        "activation": "relu"
+      },
+      {
+        "in_features": 1024,
+        "out_features": 512,
+        "activation": "sigmoid"
+      },
+      {
+        "in_features": 512,
+        "out_features": 128,
+        "activation": "relu"
+      },
+      {
+        "in_features": 128,
+        "out_features": 7
+      }
+    ]
+  },
+  {
+    "name": "3layers_leakyrelu",
+    "layers": [
+      {
+        "in_features": 4,
+        "out_features": 512,
+        "activation": "leaky_relu"
+      },
+      {
+        "in_features": 512,
+        "out_features": 128,
+        "activation": "leaky_relu"
+      },
+      {
+        "in_features": 128,
+        "out_features": 7
+      }
+    ]
+  }
+]
