@@ -195,7 +195,7 @@ def test_given_no_difference_when_find_move_position_then_raise_error():
     with pytest.raises(ValueError) as e:
         board.find_move_position(initial_state)
 
-    assert str(e.value) == "Invalid board state: no move was made."
+    assert str(e.value) == "Invalid board state: no move was made"
 
 
 def test_given_diagonal_win_when_get_winner_then_return_winner():

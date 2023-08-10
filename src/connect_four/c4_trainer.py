@@ -44,6 +44,7 @@ def setup_training_data(train_batch_size=16, test_batch_size=32):
 
 def train(model, criterion, optimizer, train_loader):
     # Train the model
+    tot_loss = 0
     model.train()
 
     for states_batch, q_values_batch in train_loader:
@@ -61,8 +62,8 @@ def train(model, criterion, optimizer, train_loader):
 
         optimizer.step()
 
-        # print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.item()}")
-
+        tot_loss += loss.item()
+    print(f"Average loss: {tot_loss / len(train_loader)}")
     # Save the trained model
     # torch.save(model.state_dict(), "connect_four/models/first.pth")
 
@@ -89,7 +90,7 @@ def train_loop(
     opponent,
     games_to_play=20,
     epochs=13,
-    patience=2,
+    patience=3,
     verbose=False,
 ):
     best_score = 0
@@ -132,6 +133,7 @@ def run_training(lr: float):
     for conv_config in conv_configs:
         for fc_config in fc_configs:
             new_model = Connect4Net(conv_config, fc_config).to(device)
+            print(f"Conv: {conv_config['name']}, FC: {fc_config['name']}")
             model, criterion, optimizer = model_setup(new_model, lr)
             epoch, score = train_loop(
                 model,
@@ -140,7 +142,7 @@ def run_training(lr: float):
                 train_data,
                 mcts_agent,
                 verbose=True,
-                games_to_play=25,
+                games_to_play=30,
             )
             results.append((score, conv_config["name"], fc_config["name"], epoch))
 
