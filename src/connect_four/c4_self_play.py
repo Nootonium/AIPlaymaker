@@ -137,10 +137,23 @@ def tune_c_param():
 
 
 if __name__ == "__main__":
-    p1 = MCTSPlayer(250, 0.9)
-    """model = Connect4Net(7)
-    model.load_state_dict(load("connect_four/models/first.pth"))
-    model.eval()"""
-    p2 = Player()
-    p2 = MCTSPlayer(3500, 0.9)
-    play_games(p1, p2, 10, verbose=True)
+    import json
+    from torch import load
+    from .c4_nets import Connect4Net
+
+    p1 = Player()
+    with open("connect_four/models/conv_configs.json", "r", encoding="utf-8") as file:
+        conv_configs = json.load(file)
+    with open("connect_four/models/fc_configs.json", "r", encoding="utf-8") as file:
+        fc_configs = json.load(file)
+
+    conv_config = conv_configs[1]
+    fc_config = fc_configs[0]
+
+    model = Connect4Net(conv_config, fc_config).to(
+        "cuda" if torch.cuda.is_available() else "cpu"
+    )
+    model.load_state_dict(load("connect_four/models/epoch_4.pth"))
+    model.eval()
+    p2 = NeuralNetPlayer(model)
+    play_games(p1, p2, 2, verbose=True)

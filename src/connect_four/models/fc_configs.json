@@ -1,76 +1,38 @@
 [
   {
-    "name": "3layers_relu256",
+    "name": "3layers_leakyrelu4096divby8",
     "layers": [
       {
         "in_features": 4,
-        "out_features": 256,
-        "activation": "relu"
-      },
-      {
-        "in_features": 256,
-        "out_features": 64,
-        "activation": "relu"
-      },
-      {
-        "in_features": 64,
-        "out_features": 7
-      }
-    ]
-  },
-  {
-    "name": "3layers_relu1024",
-    "layers": [
-      {
-        "in_features": 4,
-        "out_features": 1024,
-        "activation": "relu"
-      },
-      {
-        "in_features": 1024,
-        "out_features": 256,
-        "activation": "relu"
-      },
-      {
-        "in_features": 256,
-        "out_features": 7
-      }
-    ]
-  },
-  {
-    "name": "3layers_leakyrelu1024",
-    "layers": [
-      {
-        "in_features": 4,
-        "out_features": 1024,
+        "out_features": 4096,
         "activation": "leaky_relu"
       },
       {
-        "in_features": 1024,
-        "out_features": 256,
-        "activation": "leaky_relu"
-      },
-      {
-        "in_features": 256,
-        "out_features": 7
-      }
-    ]
-  },
-  {
-    "name": "3layers_leakyrelu512",
-    "layers": [
-      {
-        "in_features": 4,
+        "in_features": 4096,
         "out_features": 512,
         "activation": "leaky_relu"
       },
       {
         "in_features": 512,
-        "out_features": 128,
+        "out_features": 7
+      }
+    ]
+  },
+  {
+    "name": "3layers_leakyrelu2048divby4",
+    "layers": [
+      {
+        "in_features": 4,
+        "out_features": 2048,
         "activation": "leaky_relu"
       },
       {
-        "in_features": 128,
+        "in_features": 2048,
+        "out_features": 512,
+        "activation": "leaky_relu"
+      },
+      {
+        "in_features": 512,
         "out_features": 7
       }
     ]

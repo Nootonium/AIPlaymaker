@@ -1,4 +1,5 @@
 import json
+import os
 import torch
 from torch import nn, optim
 from torch.utils.data import TensorDataset, DataLoader
@@ -92,6 +93,8 @@ def train_loop(
     epochs=13,
     patience=3,
     verbose=False,
+    save_models=False,
+    save_path="models/",
 ):
     best_score = 0
     best_epoch = -1
@@ -112,6 +115,13 @@ def train_loop(
         else:
             epochs_without_improvement += 1
 
+        if save_models:
+            os.makedirs(save_path, exist_ok=True)
+            save_name = f"epoch_{epoch + 1}.pth"
+            torch.save(model.state_dict(), os.path.join(save_path, save_name))
+            if verbose:
+                print(f"Model saved as {save_name}")
+
         if epochs_without_improvement >= patience:
             if verbose:
                 print("Stopping early due to lack of improvement")
@@ -119,9 +129,9 @@ def train_loop(
     return best_epoch, best_score
 
 
-def run_training(lr: float):
+def test_training(lr: float):
     train_data = setup_training_data()
-    mcts_agent = MCTSPlayer(250, 0.9)
+    mcts_agent = MCTSPlayer(350, 0.9)
 
     with open("connect_four/models/conv_configs.json", "r", encoding="utf-8") as file:
         conv_configs = json.load(file)
@@ -130,21 +140,24 @@ def run_training(lr: float):
 
     results = []
 
-    for conv_config in conv_configs:
-        for fc_config in fc_configs:
-            new_model = Connect4Net(conv_config, fc_config).to(device)
-            print(f"Conv: {conv_config['name']}, FC: {fc_config['name']}")
-            model, criterion, optimizer = model_setup(new_model, lr)
-            epoch, score = train_loop(
-                model,
-                criterion,
-                optimizer,
-                train_data,
-                mcts_agent,
-                verbose=True,
-                games_to_play=30,
-            )
-            results.append((score, conv_config["name"], fc_config["name"], epoch))
+    conv_config = conv_configs[1]
+    fc_config = fc_configs[0]
+
+    new_model = Connect4Net(conv_config, fc_config).to(device)
+    print(f"Conv: {conv_config['name']}, FC: {fc_config['name']}")
+    model, criterion, optimizer = model_setup(new_model, lr)
+    epoch, score = train_loop(
+        model,
+        criterion,
+        optimizer,
+        train_data,
+        mcts_agent,
+        verbose=True,
+        games_to_play=25,
+        save_models=True,
+        save_path="connect_four/models/",
+    )
+    results.append((score, conv_config["name"], fc_config["name"], epoch))
 
     results.sort(key=lambda x: -x[0])
 
@@ -156,4 +169,4 @@ def run_training(lr: float):
 
 
 if __name__ == "__main__":
-    run_training(0.0003)
+    test_training(0.0003)

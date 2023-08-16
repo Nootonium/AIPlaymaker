@@ -1,0 +1,49 @@
+Ranking:
+1. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu1024, Score: 0.6333333333333333, Epoch: 3
+2. Conv: 1layers64outchannels, FC: 3layers_leakyrelu512, Score: 0.6333333333333333, Epoch: 5
+3. Conv: 1layers64outchannelsSmallerKernel, FC: 3layers_leakyrelu1024, Score: 0.6333333333333333, Epoch: 5
+4. Conv: 1layers64outchannelsSmallerKernel, FC: 3layers_relu1024, Score: 0.625, Epoch: 8
+5. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_relu1024, Score: 0.6, Epoch: 4
+6. Conv: 1layers64outchannels, FC: 3layers_relu1024, Score: 0.6, Epoch: 6
+7. Conv: 1layers64outchannels, FC: 3layers_leakyrelu1024, Score: 0.6, Epoch: 5
+8. Conv: 1layers64outchannelsSmallerKernel, FC: 3layers_relu256, Score: 0.5916666666666667, Epoch: 11
+9. Conv: 1layers64outchannelsSmallerKernel, FC: 3layers_leakyrelu512, Score: 0.5333333333333333, Epoch: 9
+10. Conv: 1layers64outchannels, FC: 3layers_relu256, Score: 0.525, Epoch: 3
+11. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_relu256, Score: 0.43333333333333335, Epoch: 0
+12. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu512, Score: 0.3333333333333333, Epoch: 0
+
+Ranking:
+1. Conv: 1layers64outchannelsSmallerKernel, FC: 4layers_leakyrelu2048, Score: 0.6833333333333333, Epoch: 4
+2. Conv: 1layers64outchannels, FC: 3layers_leakyrelu1024, Score: 0.5916666666666667, Epoch: 2
+3. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu1024, Score: 0.5666666666666667, Epoch: 4
+4. Conv: 1layers64outchannelsSmallerKernel, FC: 3layers_leakyrelu1024, Score: 0.5666666666666667, Epoch: 1
+5. Conv: 3mixedlayersmixedoutchannels, FC: 4layers_leakyrelu2048, Score: 0.5583333333333333, Epoch: 1
+6. Conv: 1layers64outchannels, FC: 4layers_leakyrelu2048, Score: 0.5333333333333333, Epoch: 4
+
+Ranking:
+1. Conv: 3mixedlayersmixedoutchannels, FC: 4layers_leakyrelu2048, Score: 0.7333333333333333, Epoch: 7
+2. Conv: 1layers64outchannelsSmallerKernel, FC: 3layers_leakyrelu1024, Score: 0.625, Epoch: 10
+3. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu1024, Score: 0.6, Epoch: 4
+4. Conv: 1layers64outchannels, FC: 4layers_leakyrelu2048, Score: 0.6, Epoch: 7
+5. Conv: 1layers64outchannels, FC: 3layers_leakyrelu1024, Score: 0.5583333333333333, Epoch: 2
+6. Conv: 1layers64outchannelsSmallerKernel, FC: 4layers_leakyrelu2048, Score: 0.5, Epoch: 1
+
+Ranking:
+1. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu2048divby4, Score: 0.6583333333333333, Epoch: 7
+2. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu2048divby8, Score: 0.6333333333333333, Epoch: 11
+3. Conv: 2layers32outchannelsbigandsmallkernel, FC: 3layers_leakyrelu2048divby8, Score: 0.625, Epoch: 6
+4. Conv: 2layers32outchannelsbigandsmallkernel, FC: 3layers_leakyrelu2048divby4, Score: 0.4666666666666667, Epoch: 2
+5. Conv: 2layers32outchannelsbigandsmallkernel, FC: 2layers_leakyrelu2048, Score: 0.2916666666666667, Epoch: 8
+6. Conv: 3mixedlayersmixedoutchannels, FC: 2layers_leakyrelu2048, Score: 0.13333333333333333, Epoch: 1
+
+Ranking:
+1. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu2048divby8, Score: 0.6333333333333333, Epoch: 7
+2. Conv: 1layers64outchannelsmallkernel, FC: 3layers_leakyrelu2048divby4, Score: 0.6333333333333333, Epoch: 6
+3. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu2048divby4, Score: 0.6, Epoch: 9
+4. Conv: 1layers64outchannelsmallkernel, FC: 3layers_leakyrelu2048divby8, Score: 0.5916666666666667, Epoch: 2
+
+Ranking:
+1. Conv: 4mixedlayersmixedoutchannels, FC: 3layers_leakyrelu4096divby8, Score: 0.63, Epoch: 6
+2. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu2048divby4, Score: 0.605, Epoch: 4
+3. Conv: 4mixedlayersmixedoutchannels, FC: 3layers_leakyrelu2048divby4, Score: 0.6, Epoch: 6
+4. Conv: 3mixedlayersmixedoutchannels, FC: 3layers_leakyrelu4096divby8, Score: 0.59, Epoch: 5
