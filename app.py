@@ -5,7 +5,11 @@ from dotenv import load_dotenv
 from src.resources.games_list import GamesList
 from src.resources.tictactoe import TicTacToe
 from src.resources.connect_four import ConnectFour
-from src.exceptions import InvalidBoardException, GameFinishedException
+from src.exceptions import (
+    InvalidBoardException,
+    GameFinishedException,
+    UnsupportedDimensionsException,
+)
 from config import os, Development, Staging, Production
 
 load_dotenv()
@@ -38,6 +42,13 @@ def handle_invalid_usage(error):
 
 @app.errorhandler(GameFinishedException)
 def handle_game_finished(error):
+    response = jsonify({"error": str(error)})
+    response.status_code = 400
+    return response
+
+
+@app.errorhandler(UnsupportedDimensionsException)
+def handle_unsupported_dimensions(error):
     response = jsonify({"error": str(error)})
     response.status_code = 400
     return response

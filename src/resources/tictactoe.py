@@ -9,7 +9,7 @@ class TicTacToe(Resource):
         self.service = T3Service()
 
     def post(self, action: str) -> Response:
-        input_board = request.get_json()["board"]
+        input_board = request.get_json().get("board")
         strategy = request.args.get("strategy")
         if input_board is None:
             return make_response({"error": "Board is required"}, 400)

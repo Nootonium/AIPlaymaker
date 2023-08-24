@@ -17,3 +17,10 @@ class InvalidActionException(Exception):
 
     def __init__(self, message="Invalid action.") -> None:
         super().__init__(message)
+
+
+class UnsupportedDimensionsException(Exception):
+    """Raised when unsupported board dimensions are provided for ML strategy."""
+
+    def __init__(self, message="Unsuported dimension") -> None:
+        super().__init__(message)

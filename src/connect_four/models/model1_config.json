@@ -1,0 +1,54 @@
+{
+  "conv_config": {
+    "name": "4mixedlayersmixedoutchannels",
+    "layers": [
+      {
+        "in_channels": 2,
+        "out_channels": 16,
+        "kernel_size": [2, 4],
+        "padding": [0, 1],
+        "stride": 2
+      },
+      {
+        "in_channels": 2,
+        "out_channels": 16,
+        "kernel_size": [4, 2],
+        "padding": [1, 0],
+        "stride": 2
+      },
+      {
+        "in_channels": 2,
+        "out_channels": 32,
+        "kernel_size": 6,
+        "padding": 2,
+        "stride": 2
+      },
+      {
+        "in_channels": 2,
+        "out_channels": 32,
+        "kernel_size": 4,
+        "padding": 1,
+        "stride": 2
+      }
+    ]
+  },
+  "fc_config": {
+    "name": "3layers_leakyrelu4096divby8",
+    "layers": [
+      {
+        "in_features": 4,
+        "out_features": 4096,
+        "activation": "leaky_relu"
+      },
+      {
+        "in_features": 4096,
+        "out_features": 512,
+        "activation": "leaky_relu"
+      },
+      {
+        "in_features": 512,
+        "out_features": 7
+      }
+    ]
+  }
+}

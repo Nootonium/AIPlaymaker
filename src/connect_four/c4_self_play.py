@@ -41,9 +41,9 @@ class MCTSPlayer(Player):
 class NeuralNetPlayer(Player):
     def __init__(self, in_model):
         super(NeuralNetPlayer, self).__init__()
-        self.model = in_model
-        self.model.eval()
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model = in_model.to(self.device)
+        self.model.eval()
 
     def make_move(self, board):
         board_state = encode_board(board)
