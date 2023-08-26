@@ -5,7 +5,7 @@ from torch import nn, optim
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 from .c4_nets import Connect4Net
-from .c4_data_generator import load_data
+from .c4_data_generator import load_mcts_data
 from .c4_self_play import play_games, MCTSPlayer, NeuralNetPlayer
 
 
@@ -21,7 +21,7 @@ def model_setup(new_model, learning_rate=0.01):
 
 
 def setup_training_data(train_batch_size=16, test_batch_size=32):
-    states, actions, _, all_qs, _ = load_data("connect_four/data/game_data.h5")
+    states, actions, _, all_qs, _ = load_mcts_data("connect_four/data/game_data.h5")
 
     q_values_all = np.zeros((len(all_qs), 7))  # 7 actions in Connect Four
     for i, q_dict in enumerate(all_qs):

@@ -2,6 +2,8 @@ from collections import Counter
 from typing import Literal, Tuple
 from .c4_constants import VALID_MOVES
 
+# from ..exceptions import InvalidBoardException
+
 
 DIRECTIONS = [
     (0, 1),
@@ -23,7 +25,7 @@ class C4Board:
         self.dimensions = dimensions
         self.state = state
         if not self.is_valid_game_state():
-            raise ValueError("Invalid board")
+            raise ValueError("Invalid board state")
 
     def __str__(self) -> str:
         rows, columns = self.dimensions

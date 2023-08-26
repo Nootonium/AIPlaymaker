@@ -1,8 +1,7 @@
 import random
 from tqdm import tqdm
-import numpy as np
 import torch
-
+import numpy as np
 
 from .c4_board import C4Board
 from .c4_mcts import C4MCTreeSearch
@@ -18,6 +17,12 @@ class Player:
         moves = board.get_next_possible_moves()
         move = int(input(f"Enter move {moves}: "))
         return board.with_move(move)
+
+    def make_move_with_q_values(self, board: C4Board):
+        print(board)
+        moves = board.get_next_possible_moves()
+        move = int(input(f"Enter move {moves}: "))
+        return board.with_move(move), move, None
 
     def reset_wins(self):
         self.wins = 0
@@ -36,6 +41,18 @@ class MCTSPlayer(Player):
         mcts = C4MCTreeSearch(board, self.c_param)
         new_board = mcts.run(self.num_iterations)
         return new_board
+
+    def make_move_with_q_values(self, board: C4Board):
+        mcts = C4MCTreeSearch(board, self.c_param)
+        new_board = mcts.run(self.num_iterations)
+        q_values_dict = mcts.root.get_q_values()
+
+        q_values_list = []
+        for col in range(board.dimensions[1]):
+            q_values_list.append(q_values_dict.get(col, float("-inf")))
+
+        _, col = board.find_move_position(new_board.state)
+        return new_board, col, np.array(q_values_list).reshape(1, -1)
 
 
 class NeuralNetPlayer(Player):
@@ -61,6 +78,30 @@ class NeuralNetPlayer(Player):
         for move in sorted_moves[0]:
             if move.item() in board.get_next_possible_moves():
                 return board.with_move(move.item())
+
+        raise Exception("No valid moves found")
+
+    def make_move_with_q_values(self, board, epsilon=0.01):
+        board_state = encode_board(board)
+        board_state_tensor = (
+            torch.tensor(board_state, dtype=torch.float)
+            .unsqueeze(0)
+            .to(device=self.device)
+        )
+
+        with torch.inference_mode():
+            q_values_tensor = self.model(board_state_tensor)
+            q_values = q_values_tensor.cpu().numpy()
+
+        if random.random() < epsilon:
+            random_move = random.choice(board.get_next_possible_moves())
+            return (board.with_move(random_move), random_move, q_values)
+
+        sorted_moves = np.argsort(q_values[0])[::-1]
+
+        for move in sorted_moves:
+            if move.item() in board.get_next_possible_moves():
+                return (board.with_move(move.item()), move.item(), q_values)
 
         raise Exception("No valid moves found")
 
@@ -110,32 +151,6 @@ def play_games(player1, player2, num_games=100, verbose=False):
     return scores
 
 
-def tune_simulations_hyperparameters():
-    num_simulations = np.arange(4000, 50000, 1000)
-    for s in num_simulations:
-        print(f"Trying {s} simulations")
-        p1 = MCTSPlayer(s)
-        p2 = MCTSPlayer(s + 500)
-        scores = play_games(p1, p2, 100)
-        if scores[0] > scores[1]:
-            print(f"Player 1 wins with {s} simulations")
-            break
-
-
-def tune_c_param():
-    c_params = np.arange(1.2, 1.6, 0.1)
-    best_c = 0.9
-    for c in c_params:
-        print(f"Trying {c} for c")
-        mcts1 = MCTSPlayer(3500, c)
-        mcts2 = MCTSPlayer(3500, best_c)
-        scores = play_games(mcts1, mcts2, 100)
-        if scores[0] > scores[1]:
-            print(f"Player 1 wins with {c} for c")
-            best_c = c
-    print(f"Best c: {best_c}")
-
-
 if __name__ == "__main__":
     import json
     from torch import load
@@ -150,10 +165,11 @@ if __name__ == "__main__":
     conv_config = conv_configs[1]
     fc_config = fc_configs[0]
 
-    model = Connect4Net(conv_config, fc_config).to(
-        "cuda" if torch.cuda.is_available() else "cpu"
-    )
-    model.load_state_dict(load("connect_four/models/epoch_4.pth"))
-    model.eval()
-    p2 = NeuralNetPlayer(model)
-    play_games(p1, p2, 2, verbose=True)
+    model1 = Connect4Net(conv_config, fc_config)
+    model2 = Connect4Net(conv_config, fc_config)
+    model1.load_state_dict(load("connect_four/models/epoch_3.pth"))
+    model2.load_state_dict(load("connect_four/models/model1_epoch_7.pth"))
+
+    p2 = NeuralNetPlayer(model1)
+    p3 = NeuralNetPlayer(model2)
+    play_games(p2, p3, 10000, verbose=True)

@@ -1,13 +1,14 @@
 from collections import Counter
 from typing import Literal
 from .t3_constants import WINNING, VALID_MOVES
+from ..exceptions import InvalidBoardException
 
 
 class T3Board:
     def __init__(self, input_board: str):
         self.state = input_board
         if not self.is_valid_game_state():
-            raise ValueError("Invalid board")
+            raise InvalidBoardException("Invalid board state")
 
     def __str__(self):
         pretty_board = ""

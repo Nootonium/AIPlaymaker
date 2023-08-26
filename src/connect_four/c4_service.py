@@ -1,4 +1,5 @@
 import json
+from torch import load
 from ..exceptions import (
     InvalidBoardException,
     GameFinishedException,
@@ -19,7 +20,25 @@ class C4Service:
             configs = json.load(file)
         conv_config = configs["conv_config"]
         fc_config = configs["fc_config"]
-        self.nn_player = NeuralNetPlayer(Connect4Net(conv_config, fc_config))
+        model = Connect4Net(conv_config, fc_config)
+        model.load_state_dict(load("src/connect_four/models/model1_epoch_7.pth"))
+        self.nn_player = NeuralNetPlayer(model)
+
+    def get_board(self, input_board, dimensions):
+        is_valid, board_format = C4Converter.validate_board(input_board, dimensions)
+        if not is_valid:
+            raise InvalidBoardException()
+        board = C4Board(
+            dimensions,
+            C4Converter.convert_to_internal_format(input_board, board_format),
+        )
+        return board, board_format
+
+    def build_response(self, move, post_move_board, board_format) -> dict:
+        post_move_board = C4Converter.convert_from_internal_format(
+            post_move_board, board_format
+        )
+        return {"move": move, "post_move_board": post_move_board}
 
     def get_next_move(self, input_board, dimensions, strategy) -> dict:
         if strategy == "ml":
@@ -34,22 +53,15 @@ class C4Service:
         return self._get_move_based_on_strategy(input_board, dimensions, strategy_fn)
 
     def _get_move_based_on_strategy(self, input_board, dimensions, strategy_fn) -> dict:
-        is_valid, board_format = C4Converter.validate_board(input_board, dimensions)
-        if not is_valid:
-            raise InvalidBoardException()
-        board = C4Board(
-            dimensions,
-            C4Converter.convert_to_internal_format(input_board, board_format),
-        )
+        board, board_format = self.get_board(input_board, dimensions)
+
         if board.get_winner() is not None:
             raise GameFinishedException()
 
         res = strategy_fn(board)
 
         _, col = board.find_move_position(res.state)
-        post_move_board = C4Converter.convert_from_internal_format(res, board_format)
-
-        return {"move": col, "post_move_board": post_move_board}
+        return self.build_response(col, res.state, board_format)
 
     def _ml_strategy(self, board):
         return self.nn_player.make_move(board)
