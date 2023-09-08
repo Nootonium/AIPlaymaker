@@ -79,3 +79,34 @@ class Connect4Net(nn.Module):
         x = x.view(x.size(0), -1)
         q_values = self.fc_block(x)
         return q_values
+
+
+class Connect4Netv2(nn.Module):
+    def __init__(
+        self, conv_config: dict, fc_config_policy: dict, fc_config_value: dict
+    ):
+        super(Connect4Netv2, self).__init__()
+        self.conv_block = ParallelConvBlock(conv_config)
+        fc_input_size = self._find_conv_output_size(conv_config)
+        self.fc_block_policy = FCBlock(fc_config_policy, fc_input_size)
+        self.fc_block_value = FCBlock(fc_config_value, fc_input_size)
+
+    def _find_conv_output_size(self, conv_config):
+        dummy_input = randn(1, conv_config["layers"][0]["in_channels"], 12, 14)
+        dummy_output = self.conv_block(dummy_input)
+        fc_input_size = dummy_output.view(dummy_output.size(0), -1).size(1)
+        return fc_input_size
+
+    def forward(self, x):
+        x = F.interpolate(x, size=(12, 14), mode="nearest")
+        x = self.conv_block(x)
+        x = x.view(x.size(0), -1)
+
+        policy_logits = self.fc_block_policy(x)
+        # Convert the logits to a probability distribution
+        policy_output = F.softmax(policy_logits, dim=1)
+
+        # Assuming the last layer of fc_block_value is a tanh to squash values between [-1, 1]
+        value_output = self.fc_block_value(x).squeeze(-1)
+
+        return policy_output, value_output
