@@ -1,0 +1,21 @@
+{
+  "name": "aiplaymaker",
+  "version": "1.0.0",
+  "description": "Node.js envs for aiplaymaker",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "format": "npm run format --workspaces"
+  },
+  "author": "Pingu",
+  "license": "MIT",
+  "workspaces": [
+    "frontend",
+    "gateway"
+  ]
+}
